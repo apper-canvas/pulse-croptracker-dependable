@@ -13,6 +13,98 @@ const MainFeature = ({ darkMode, searchQuery = '' }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
   const [editingItem, setEditingItem] = useState(null);
+const [selectedLocation, setSelectedLocation] = useState('california');
+  
+  // Weather data for different locations
+  const weatherData = {
+    california: {
+      location: 'California Central Valley',
+      current: {
+        temperature: 72,
+        condition: 'Sunny',
+        humidity: 45,
+        windSpeed: 8,
+        icon: 'Sun'
+      },
+      forecast: [
+        { day: 'Today', high: 75, low: 55, condition: 'Sunny', icon: 'Sun' },
+        { day: 'Tomorrow', high: 78, low: 58, condition: 'Partly Cloudy', icon: 'Cloud' },
+        { day: format(addDays(new Date(), 2), 'EEE'), high: 76, low: 60, condition: 'Cloudy', icon: 'Cloud' },
+        { day: format(addDays(new Date(), 3), 'EEE'), high: 73, low: 57, condition: 'Light Rain', icon: 'CloudRain' },
+        { day: format(addDays(new Date(), 4), 'EEE'), high: 71, low: 54, condition: 'Sunny', icon: 'Sun' }
+      ]
+    },
+    iowa: {
+      location: 'Iowa Corn Belt',
+      current: {
+        temperature: 65,
+        condition: 'Partly Cloudy',
+        humidity: 60,
+        windSpeed: 12,
+        icon: 'Cloud'
+      },
+      forecast: [
+        { day: 'Today', high: 68, low: 48, condition: 'Partly Cloudy', icon: 'Cloud' },
+        { day: 'Tomorrow', high: 71, low: 52, condition: 'Sunny', icon: 'Sun' },
+        { day: format(addDays(new Date(), 2), 'EEE'), high: 74, low: 55, condition: 'Thunderstorms', icon: 'CloudRain' },
+        { day: format(addDays(new Date(), 3), 'EEE'), high: 69, low: 51, condition: 'Cloudy', icon: 'Cloud' },
+        { day: format(addDays(new Date(), 4), 'EEE'), high: 72, low: 54, condition: 'Sunny', icon: 'Sun' }
+      ]
+    },
+    kansas: {
+      location: 'Kansas Wheat Belt',
+      current: {
+        temperature: 70,
+        condition: 'Clear',
+        humidity: 35,
+        windSpeed: 15,
+        icon: 'Sun'
+      },
+      forecast: [
+        { day: 'Today', high: 74, low: 52, condition: 'Clear', icon: 'Sun' },
+        { day: 'Tomorrow', high: 77, low: 55, condition: 'Sunny', icon: 'Sun' },
+        { day: format(addDays(new Date(), 2), 'EEE'), high: 79, low: 58, condition: 'Partly Cloudy', icon: 'Cloud' },
+        { day: format(addDays(new Date(), 3), 'EEE'), high: 75, low: 54, condition: 'Windy', icon: 'Cloud' },
+        { day: format(addDays(new Date(), 4), 'EEE'), high: 73, low: 51, condition: 'Clear', icon: 'Sun' }
+      ]
+    },
+    texas: {
+      location: 'Texas Panhandle',
+      current: {
+        temperature: 78,
+        condition: 'Hot',
+        humidity: 40,
+        windSpeed: 10,
+        icon: 'Sun'
+      },
+      forecast: [
+        { day: 'Today', high: 82, low: 62, condition: 'Hot', icon: 'Sun' },
+        { day: 'Tomorrow', high: 85, low: 65, condition: 'Sunny', icon: 'Sun' },
+        { day: format(addDays(new Date(), 2), 'EEE'), high: 83, low: 63, condition: 'Partly Cloudy', icon: 'Cloud' },
+        { day: format(addDays(new Date(), 3), 'EEE'), high: 81, low: 61, condition: 'Thunderstorms', icon: 'CloudRain' },
+        { day: format(addDays(new Date(), 4), 'EEE'), high: 79, low: 59, condition: 'Cloudy', icon: 'Cloud' }
+      ]
+    },
+    nebraska: {
+      location: 'Nebraska Plains',
+      current: {
+        temperature: 63,
+        condition: 'Breezy',
+        humidity: 55,
+        windSpeed: 18,
+        icon: 'Cloud'
+      },
+      forecast: [
+        { day: 'Today', high: 67, low: 45, condition: 'Breezy', icon: 'Cloud' },
+        { day: 'Tomorrow', high: 70, low: 48, condition: 'Partly Cloudy', icon: 'Cloud' },
+        { day: format(addDays(new Date(), 2), 'EEE'), high: 72, low: 51, condition: 'Sunny', icon: 'Sun' },
+        { day: format(addDays(new Date(), 3), 'EEE'), high: 69, low: 49, condition: 'Light Rain', icon: 'CloudRain' },
+        { day: format(addDays(new Date(), 4), 'EEE'), high: 66, low: 46, condition: 'Cloudy', icon: 'Cloud' }
+      ]
+    }
+  };
+
+  const currentWeather = weatherData[selectedLocation];
   // Initialize with sample data
   useEffect(() => {
     const sampleFarms = [
