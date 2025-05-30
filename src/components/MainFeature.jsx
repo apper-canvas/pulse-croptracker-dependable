@@ -209,85 +209,7 @@ const [selectedLocation, setSelectedLocation] = useState('california');
     setTasks(sampleTasks);
     setExpenses(sampleExpenses);
 
-  // Chart data processing functions
-  const getMonthlyExpensesData = () => {
-    const monthlyData = {};
-    expenses.forEach(expense => {
-      const month = format(expense.date, 'MMM yyyy');
-      if (!monthlyData[month]) {
-        monthlyData[month] = {};
-      }
-      monthlyData[month][expense.category] = (monthlyData[month][expense.category] || 0) + expense.amount;
-    });
-    
-    const categories = [...new Set(expenses.map(e => e.category))];
-    const months = Object.keys(monthlyData).sort();
-    
-    return {
-      categories: months,
-      series: categories.map(category => ({
-        name: category,
-        data: months.map(month => monthlyData[month][category] || 0)
-      }))
-    };
-  };
-
-  const getRevenueVsExpensesData = () => {
-    const monthlyRevenue = {};
-    const monthlyExpenses = {};
-    
-    sampleRevenue.forEach(revenue => {
-      const month = format(revenue.date, 'MMM yyyy');
-      monthlyRevenue[month] = (monthlyRevenue[month] || 0) + revenue.amount;
-    });
-    
-    expenses.forEach(expense => {
-      const month = format(expense.date, 'MMM yyyy');
-      monthlyExpenses[month] = (monthlyExpenses[month] || 0) + expense.amount;
-    });
-    
-    const allMonths = [...new Set([...Object.keys(monthlyRevenue), ...Object.keys(monthlyExpenses)])].sort();
-    
-    return {
-      categories: allMonths,
-      series: [
-        {
-          name: 'Revenue',
-          data: allMonths.map(month => monthlyRevenue[month] || 0)
-        },
-        {
-          name: 'Expenses',
-          data: allMonths.map(month => monthlyExpenses[month] || 0)
-        }
-      ]
-    };
-  };
-
-    const sampleExpenses = [
-      {
-        id: '1',
-        farmId: '1',
-        cropId: '1',
-        amount: 250.00,
-        category: 'Seeds',
-        description: 'Cherry tomato seeds',
-        date: new Date('2024-01-10')
-      },
-      {
-        id: '2',
-        farmId: '1',
-        cropId: null,
-        amount: 1200.00,
-        category: 'Equipment',
-        description: 'Irrigation system upgrade',
-        date: new Date('2024-01-20')
-      }
-    ];
-
-    setFarms(sampleFarms);
-    setCrops(sampleCrops);
-    setTasks(sampleTasks);
-    setExpenses(sampleExpenses);
+}, []);
 
   // Chart data processing functions
   const getMonthlyExpensesData = () => {
@@ -342,7 +264,6 @@ const [selectedLocation, setSelectedLocation] = useState('california');
       ]
     };
   };
-  }, []);
 
   const openModal = (type, item = null) => {
     setModalType(type);
