@@ -73,38 +73,6 @@ const [activeTab, setActiveTab] = useState('overview');
         </div>
       </header>
 
-      {/* Navigation Tabs */}
-      <nav className="bg-white/60 dark:bg-surface-800/60 backdrop-blur-sm border-b border-green-200/30 dark:border-surface-700/30 sticky top-16 lg:top-20 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-1 sm:space-x-2 lg:space-x-4 py-2 lg:py-3 overflow-x-auto scrollbar-hide">
-{[
-              { icon: 'LayoutDashboard', label: 'Dashboard', key: 'overview' },
-              { icon: 'MapPin', label: 'Farms', key: 'farms' },
-              { icon: 'Wheat', label: 'Crops', key: 'crops' },
-              { icon: 'Calendar', label: 'Tasks', key: 'tasks' },
-              { icon: 'DollarSign', label: 'Expenses', key: 'expenses' },
-            ].map((tab, index) => (
-              <motion.button
-                key={tab.label}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center space-x-2 px-3 lg:px-4 py-2 lg:py-3 rounded-xl whitespace-nowrap transition-all duration-300 ${
-                  activeTab === tab.key
-                    ? 'bg-primary text-white shadow-lg'
-                    : 'bg-surface-100/80 dark:bg-surface-700/80 text-surface-700 dark:text-surface-300 hover:bg-surface-200/80 dark:hover:bg-surface-600/80'
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-                <ApperIcon name={tab.icon} className="w-4 h-4 lg:w-5 lg:h-5" />
-                <span className="text-sm lg:text-base font-medium">{tab.label}</span>
-              </motion.button>
-            ))}
-          </div>
-        </div>
-      </nav>
 
       {/* Main Content */}
       <main className="flex-1">
