@@ -106,24 +106,34 @@ const [selectedLocation, setSelectedLocation] = useState('california');
   };
 
   const currentWeather = weatherData[selectedLocation];
-  // Initialize with sample data
+// Sample revenue data for charts
+  const sampleRevenue = [
+    { farmId: '1', amount: 3500.00, source: 'Crop Sales', date: new Date('2024-01-25') },
+    { farmId: '1', amount: 2800.00, source: 'Crop Sales', date: new Date('2024-02-15') },
+    { farmId: '2', amount: 4200.00, source: 'Crop Sales', date: new Date('2024-02-20') },
+    { farmId: '1', amount: 3100.00, source: 'Crop Sales', date: new Date('2024-03-10') },
+    { farmId: '2', amount: 3800.00, source: 'Crop Sales', date: new Date('2024-03-15') },
+    { farmId: '1', amount: 4500.00, source: 'Crop Sales', date: new Date('2024-04-05') },
+  ];
+
+  // Initialize sample data
   useEffect(() => {
     const sampleFarms = [
       {
         id: '1',
         name: 'Green Valley Farm',
-        location: 'California, USA',
+        location: 'California Central Valley',
         size: 150,
         soilType: 'Loamy',
-        createdAt: new Date('2023-01-15')
+        createdAt: new Date('2024-01-01')
       },
       {
         id: '2',
-        name: 'Sunrise Acres',
-        location: 'Texas, USA',
-        size: 200,
+        name: 'Sunset Acres',
+        location: 'Iowa Corn Belt',
+        size: 280,
         soilType: 'Clay',
-        createdAt: new Date('2023-03-20')
+        createdAt: new Date('2024-02-15')
       }
     ];
 
@@ -132,21 +142,21 @@ const [selectedLocation, setSelectedLocation] = useState('california');
         id: '1',
         farmId: '1',
         name: 'Tomatoes',
-        variety: 'Cherry Tomatoes',
-        plantingDate: new Date('2024-01-15'),
-        expectedHarvestDate: new Date('2024-04-15'),
+        variety: 'Cherry',
         area: 25,
+        plantingDate: new Date('2024-03-15'),
+        expectedHarvestDate: new Date('2024-07-01'),
         status: 'Growing'
       },
       {
         id: '2',
-        farmId: '1',
+        farmId: '2',
         name: 'Corn',
-        variety: 'Sweet Corn',
-        plantingDate: new Date('2024-02-01'),
-        expectedHarvestDate: new Date('2024-06-01'),
-        area: 50,
-        status: 'Planted'
+        variety: 'Sweet',
+        area: 120,
+        plantingDate: new Date('2024-04-01'),
+        expectedHarvestDate: new Date('2024-09-15'),
+        status: 'Growing'
       }
     ];
 
@@ -155,21 +165,21 @@ const [selectedLocation, setSelectedLocation] = useState('california');
         id: '1',
         farmId: '1',
         cropId: '1',
-        title: 'Water Tomatoes',
-        description: 'Daily watering of cherry tomato plants',
-        dueDate: new Date(),
-        completed: false,
-        priority: 'High'
+        title: 'Water irrigation system check',
+        description: 'Inspect and test all irrigation components',
+        dueDate: new Date('2024-04-15'),
+        priority: 'High',
+        completed: false
       },
       {
         id: '2',
-        farmId: '1',
-        cropId: '2',
-        title: 'Fertilize Corn',
-        description: 'Apply organic fertilizer to corn field',
-        dueDate: addDays(new Date(), 2),
-        completed: false,
-        priority: 'Medium'
+        farmId: '2',
+        cropId: null,
+        title: 'Soil pH testing',
+        description: 'Test soil pH levels across all fields',
+        dueDate: new Date('2024-04-20'),
+        priority: 'Medium',
+        completed: false
       }
     ];
 
@@ -198,15 +208,86 @@ const [selectedLocation, setSelectedLocation] = useState('california');
     setCrops(sampleCrops);
     setTasks(sampleTasks);
     setExpenses(sampleExpenses);
-// Sample revenue data for charts
-  const sampleRevenue = [
-    { farmId: '1', amount: 3500.00, source: 'Crop Sales', date: new Date('2024-01-25') },
-    { farmId: '1', amount: 2800.00, source: 'Crop Sales', date: new Date('2024-02-15') },
-    { farmId: '2', amount: 4200.00, source: 'Crop Sales', date: new Date('2024-02-20') },
-    { farmId: '1', amount: 3100.00, source: 'Crop Sales', date: new Date('2024-03-10') },
-    { farmId: '2', amount: 3800.00, source: 'Crop Sales', date: new Date('2024-03-15') },
-    { farmId: '1', amount: 4500.00, source: 'Crop Sales', date: new Date('2024-04-05') },
-  ];
+
+  // Chart data processing functions
+  const getMonthlyExpensesData = () => {
+    const monthlyData = {};
+    expenses.forEach(expense => {
+      const month = format(expense.date, 'MMM yyyy');
+      if (!monthlyData[month]) {
+        monthlyData[month] = {};
+      }
+      monthlyData[month][expense.category] = (monthlyData[month][expense.category] || 0) + expense.amount;
+    });
+    
+    const categories = [...new Set(expenses.map(e => e.category))];
+    const months = Object.keys(monthlyData).sort();
+    
+    return {
+      categories: months,
+      series: categories.map(category => ({
+        name: category,
+        data: months.map(month => monthlyData[month][category] || 0)
+      }))
+    };
+  };
+
+  const getRevenueVsExpensesData = () => {
+    const monthlyRevenue = {};
+    const monthlyExpenses = {};
+    
+    sampleRevenue.forEach(revenue => {
+      const month = format(revenue.date, 'MMM yyyy');
+      monthlyRevenue[month] = (monthlyRevenue[month] || 0) + revenue.amount;
+    });
+    
+    expenses.forEach(expense => {
+      const month = format(expense.date, 'MMM yyyy');
+      monthlyExpenses[month] = (monthlyExpenses[month] || 0) + expense.amount;
+    });
+    
+    const allMonths = [...new Set([...Object.keys(monthlyRevenue), ...Object.keys(monthlyExpenses)])].sort();
+    
+    return {
+      categories: allMonths,
+      series: [
+        {
+          name: 'Revenue',
+          data: allMonths.map(month => monthlyRevenue[month] || 0)
+        },
+        {
+          name: 'Expenses',
+          data: allMonths.map(month => monthlyExpenses[month] || 0)
+        }
+      ]
+    };
+  };
+
+    const sampleExpenses = [
+      {
+        id: '1',
+        farmId: '1',
+        cropId: '1',
+        amount: 250.00,
+        category: 'Seeds',
+        description: 'Cherry tomato seeds',
+        date: new Date('2024-01-10')
+      },
+      {
+        id: '2',
+        farmId: '1',
+        cropId: null,
+        amount: 1200.00,
+        category: 'Equipment',
+        description: 'Irrigation system upgrade',
+        date: new Date('2024-01-20')
+      }
+    ];
+
+    setFarms(sampleFarms);
+    setCrops(sampleCrops);
+    setTasks(sampleTasks);
+    setExpenses(sampleExpenses);
 
   // Chart data processing functions
   const getMonthlyExpensesData = () => {
