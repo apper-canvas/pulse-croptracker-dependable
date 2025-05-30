@@ -1324,8 +1324,9 @@ const renderReports = () => {
           )}
           </div>
 
-          {/* 5-Day Forecast */}
-{(currentWeather.forecast && currentWeather.forecast.length > 0 ? currentWeather.forecast : Array(5).fill(null)).map((day, index) => (
+{/* 5-Day Forecast */}
+<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
+            {(currentWeather.forecast && currentWeather.forecast.length > 0 ? currentWeather.forecast : Array(5).fill(null)).map((day, index) => (
               <motion.div
                 key={index}
                 className={`rounded-xl p-3 lg:p-4 text-center transition-all duration-300 ${
@@ -1359,7 +1360,7 @@ const renderReports = () => {
               </motion.div>
             ))}
           </div>
-<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
+        </div>
       </div>
     );
   };
