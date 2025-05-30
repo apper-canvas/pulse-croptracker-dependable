@@ -435,8 +435,7 @@ const MainFeature = ({ darkMode, searchQuery = '' }) => {
         dueDate: new Date('2024-04-15'),
         priority: 'High',
 completed: false,
-status: 'Not Started'
-      },
+        status: 'Not Started'
       {
         id: '2',
         farmId: '2',
@@ -446,8 +445,7 @@ status: 'Not Started'
         dueDate: new Date('2024-04-20'),
         priority: 'Medium',
 completed: false,
-status: 'In Progress'
-      }
+        status: 'In Progress'
     ];
 
     const sampleExpenses = [
@@ -592,8 +590,7 @@ case 'crop':
           id,
           dueDate: new Date(formData.dueDate),
 completed: editingItem?.completed || false,
-status: formData.status || 'Not Started'
-        };
+          status: formData.status || 'Not Started'
         
         if (editingItem) {
           setTasks(tasks.map(t => t.id === id ? taskData : t));
@@ -1361,6 +1358,8 @@ const renderReports = () => {
           </div>
         </div>
       </div>
+);
+  };
 
 const renderFarms = () => {
     // Filter farms based on search query
