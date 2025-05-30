@@ -1361,7 +1361,6 @@ const renderReports = () => {
         </div>
         </div>
         </div>
-        </div>
       </div>
     );
   };
