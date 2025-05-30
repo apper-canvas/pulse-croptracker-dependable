@@ -314,7 +314,8 @@ const [selectedLocation, setSelectedLocation] = useState('california');
         description: 'Inspect and test all irrigation components',
         dueDate: new Date('2024-04-15'),
         priority: 'High',
-        completed: false
+completed: false,
+status: 'Not Started'
       },
       {
         id: '2',
@@ -324,7 +325,8 @@ const [selectedLocation, setSelectedLocation] = useState('california');
         description: 'Test soil pH levels across all fields',
         dueDate: new Date('2024-04-20'),
         priority: 'Medium',
-        completed: false
+completed: false,
+status: 'In Progress'
       }
     ];
 
@@ -469,7 +471,8 @@ case 'crop':
           ...formData,
           id,
           dueDate: new Date(formData.dueDate),
-          completed: editingItem?.completed || false
+completed: editingItem?.completed || false,
+status: formData.status || 'Not Started'
         };
         
         if (editingItem) {
@@ -1000,13 +1003,23 @@ const renderReports = () => {
                       {getFarmName(task.farmId)} • {format(task.dueDate, 'MMM dd')}
                     </p>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    task.priority === 'High' ? 'bg-red-100 text-red-700' :
-                    task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-green-100 text-green-700'
-                  }`}>
-                    {task.priority}
-                  </span>
+<div className="flex flex-col items-end space-y-1">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      task.priority === 'High' ? 'bg-red-100 text-red-700' :
+                      task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-green-100 text-green-700'
+                    }`}>
+                      {task.priority}
+                    </span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      task.status === 'Completed' ? 'bg-green-100 text-green-700' :
+                      task.status === 'In Progress' ? 'bg-blue-100 text-blue-700' :
+                      task.status === 'On Hold' ? 'bg-orange-100 text-orange-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {task.status}
+                    </span>
+                  </div>
                 </motion.div>
               ))}
               {upcomingTasks.length === 0 && (
@@ -1485,14 +1498,23 @@ const renderTasks = () => {
                     }`}>
                       {task.title}
                     </h3>
-                    <div className="flex items-center space-x-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        task.priority === 'High' ? 'bg-red-100 text-red-700' :
-                        task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-green-100 text-green-700'
-                      }`}>
-                        {task.priority}
-                      </span>
+<div className="flex flex-col space-y-1">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          task.priority === 'High' ? 'bg-red-100 text-red-700' :
+                          task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-green-100 text-green-700'
+                        }`}>
+                          {task.priority}
+                        </span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          task.status === 'Completed' ? 'bg-green-100 text-green-700' :
+                          task.status === 'In Progress' ? 'bg-blue-100 text-blue-700' :
+                          task.status === 'On Hold' ? 'bg-orange-100 text-orange-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {task.status}
+                        </span>
+</div>
                       <div className="flex space-x-2">
                         <button
                           onClick={() => openModal('task', task)}
