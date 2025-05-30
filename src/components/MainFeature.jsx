@@ -1269,7 +1269,7 @@ const renderReports = () => {
                 </div>
               </div>
             </div>
-<div className="text-center">
+            <div className="text-center">
               <div className={`text-lg lg:text-xl font-semibold ${weatherLoading ? 'animate-pulse' : ''} text-surface-900 dark:text-white`}>
                 {typeof currentWeather.current.humidity === 'number' ? `${currentWeather.current.humidity}%` : currentWeather.current.humidity}
               </div>
@@ -1322,7 +1322,8 @@ const renderReports = () => {
               </div>
             </div>
           )}
-{/* 5-Day Forecast */}
+
+          {/* 5-Day Forecast */}
           <div className="grid grid-cols-5 gap-2 lg:gap-4">
             {(currentWeather.forecast && currentWeather.forecast.length > 0 ? currentWeather.forecast : Array(5).fill(null)).map((day, index) => (
               <motion.div
@@ -1359,11 +1360,7 @@ const renderReports = () => {
             ))}
           </div>
         </div>
-        </div>
-        </div>
       </div>
-    );
-  };
 
 const renderFarms = () => {
     // Filter farms based on search query
