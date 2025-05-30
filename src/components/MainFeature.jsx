@@ -13,7 +13,6 @@ const MainFeature = ({ darkMode }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
   const [editingItem, setEditingItem] = useState(null);
-
   // Initialize with sample data
   useEffect(() => {
     const sampleFarms = [

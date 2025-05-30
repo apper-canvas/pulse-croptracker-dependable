@@ -4,6 +4,11 @@ import ApperIcon from '../components/ApperIcon';
 import { motion } from 'framer-motion';
 
 const Home = ({ darkMode, setDarkMode }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearchChange = (query) => {
+    setSearchQuery(query);
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-surface-900 dark:via-surface-800 dark:to-surface-900 transition-all duration-500">
       {/* Header */}
@@ -28,6 +33,29 @@ const Home = ({ darkMode, setDarkMode }) => {
                 </p>
               </div>
             </motion.div>
+{/* Search Bar */}
+            <div className="flex-1 max-w-md mx-4 lg:mx-8">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <ApperIcon name="Search" className="h-4 w-4 lg:h-5 lg:w-5 text-surface-400" />
+                </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  className="block w-full pl-9 lg:pl-10 pr-3 py-2 lg:py-3 border border-surface-300/50 dark:border-surface-600/50 rounded-xl bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm text-surface-900 dark:text-white placeholder-surface-500 dark:placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+                  placeholder="Search farms, crops, tasks, expenses..."
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => handleSearchChange('')}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    <ApperIcon name="X" className="h-4 w-4 lg:h-5 lg:w-5 text-surface-400 hover:text-surface-600 dark:hover:text-surface-300" />
+                  </button>
+                )}
+              </div>
+            </div>
             
             <motion.button
               onClick={() => setDarkMode(!darkMode)}
