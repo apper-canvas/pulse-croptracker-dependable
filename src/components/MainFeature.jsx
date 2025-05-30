@@ -783,6 +783,96 @@ const [selectedLocation, setSelectedLocation] = useState('california');
             </div>
           </div>
         </div>
+{/* Weather Widget */}
+        <div className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 lg:mb-6 space-y-2 sm:space-y-0">
+            <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white flex items-center">
+              <ApperIcon name={currentWeather.current.icon} className="w-5 h-5 lg:w-6 lg:h-6 mr-2 text-secondary" />
+              Weather Forecast
+            </h3>
+            <select
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
+              className="px-3 py-1 lg:px-4 lg:py-2 text-sm lg:text-base bg-surface-50 dark:bg-surface-700 border border-surface-200 dark:border-surface-600 rounded-lg text-surface-900 dark:text-white focus:ring-2 focus:ring-secondary focus:border-transparent transition-all duration-300"
+            >
+              <option value="california">California Central Valley</option>
+              <option value="iowa">Iowa Corn Belt</option>
+              <option value="kansas">Kansas Wheat Belt</option>
+              <option value="texas">Texas Panhandle</option>
+              <option value="nebraska">Nebraska Plains</option>
+            </select>
+          </div>
+
+          {/* Current Weather */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-secondary to-secondary-dark rounded-xl flex items-center justify-center">
+                <ApperIcon name={currentWeather.current.icon} className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+              </div>
+              <div>
+                <div className="text-xl lg:text-2xl font-bold text-surface-900 dark:text-white">
+                  {currentWeather.current.temperature}°F
+                </div>
+                <div className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
+                  {currentWeather.current.condition}
+                </div>
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white">
+                {currentWeather.current.humidity}%
+              </div>
+              <div className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
+                Humidity
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white">
+                {currentWeather.current.windSpeed} mph
+              </div>
+              <div className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
+                Wind Speed
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white">
+                {currentWeather.location.split(' ').slice(-2).join(' ')}
+              </div>
+              <div className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
+                Region
+              </div>
+            </div>
+          </div>
+
+          {/* 5-Day Forecast */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4">
+            {currentWeather.forecast.map((day, index) => (
+              <motion.div
+                key={index}
+                className="bg-surface-50 dark:bg-surface-700 rounded-xl p-3 lg:p-4 text-center"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <div className="text-xs lg:text-sm font-medium text-surface-600 dark:text-surface-400 mb-2">
+                  {day.day}
+                </div>
+                <div className="w-6 h-6 lg:w-8 lg:h-8 mx-auto mb-2">
+                  <ApperIcon name={day.icon} className="w-full h-full text-secondary" />
+                </div>
+                <div className="text-sm lg:text-base font-semibold text-surface-900 dark:text-white mb-1">
+                  {day.high}°
+                </div>
+                <div className="text-xs lg:text-sm text-surface-500 dark:text-surface-500 mb-2">
+                  {day.low}°
+                </div>
+                <div className="text-xs text-surface-600 dark:text-surface-400">
+                  {day.condition}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   };
