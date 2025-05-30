@@ -1486,6 +1486,16 @@ const renderReports = () => {
 
           {/* Weather Widget */}
           <div className="space-y-6">
+            <div className={`bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft transition-all duration-500 ${
+
+        {/* Notification Settings and Tasks Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="lg:col-span-2">
+            {renderNotificationSettings()}
+          </div>
+
+          {/* Weather Widget */}
+          <div className="space-y-6">
         {/* Upcoming Tasks & Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           {/* Upcoming Tasks */}
@@ -1582,180 +1592,282 @@ const renderReports = () => {
           </div>
         </div>
 </div>
-{/* Real-time Weather Widget */}
-</div>
-          weatherLoading 
-            ? 'weather-loading' 
-            : currentWeather.current.condition === 'Sunny' || currentWeather.current.condition === 'Clear'
-              ? 'weather-sunny'
-              : currentWeather.current.condition?.includes('Rain') || currentWeather.current.condition?.includes('Storm')
-                ? 'weather-rainy'
-                : currentWeather.current.condition?.includes('Cloud')
-                  ? 'weather-cloudy'
-                  : 'weather-card'
-        }`}>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 lg:mb-6 space-y-2 sm:space-y-0">
-            <div className="flex items-center space-x-3">
-              <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white flex items-center">
-                <ApperIcon 
-                  name={currentWeather.current.icon} 
-                  className={`w-5 h-5 lg:w-6 lg:h-6 mr-2 text-secondary ${!weatherLoading ? 'weather-icon-bounce' : ''}`} 
-                />
-                Weather Forecast
-              </h3>
-              {weatherLoading && (
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-secondary rounded-full animate-pulse"></div>
-                  <span className="text-xs text-surface-500">Updating...</span>
+        </div>
+
+        {/* Real-time Weather Widget */}
+        <div className="grid grid-cols-1 gap-6 lg:gap-8">
+          <div className={`bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft transition-all duration-500 ${
+              weatherLoading 
+                ? 'weather-loading' 
+                : currentWeather.current.condition === 'Sunny' || currentWeather.current.condition === 'Clear'
+                  ? 'weather-sunny'
+                  : currentWeather.current.condition?.includes('Rain') || currentWeather.current.condition?.includes('Storm')
+                    ? 'weather-rainy'
+                    : currentWeather.current.condition?.includes('Cloud')
+                      ? 'weather-cloudy'
+                      : 'weather-card'
+            }`}>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 lg:mb-6 space-y-2 sm:space-y-0">
+                <div className="flex items-center space-x-3">
+                  <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white flex items-center">
+                    <ApperIcon 
+                      name={currentWeather.current.icon} 
+                      className={`w-5 h-5 lg:w-6 lg:h-6 mr-2 text-secondary ${!weatherLoading ? 'weather-icon-bounce' : ''}`} 
+                    />
+                    Weather Forecast
+                  </h3>
+                  {weatherLoading && (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 bg-secondary rounded-full animate-pulse"></div>
+                      <span className="text-xs text-surface-500">Updating...</span>
+                    </div>
+                  )}
+                  {lastWeatherUpdate && !weatherLoading && (
+                    <span className="text-xs text-surface-500 dark:text-surface-400">
+                      Updated {format(lastWeatherUpdate, 'HH:mm')}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center space-x-3">
+                  <select
+                    value={selectedLocation}
+                    onChange={(e) => setSelectedLocation(e.target.value)}
+                    className="px-3 py-1 lg:px-4 lg:py-2 text-sm lg:text-base bg-surface-50 dark:bg-surface-700 border border-surface-200 dark:border-surface-600 rounded-lg text-surface-900 dark:text-white focus:ring-2 focus:ring-secondary focus:border-transparent transition-all duration-300"
+                  >
+                    {Object.entries(locationOptions).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                  <motion.button
+                    onClick={() => fetchWeatherData(selectedLocation)}
+                    disabled={weatherLoading}
+                    className="p-2 rounded-lg bg-secondary/10 hover:bg-secondary/20 text-secondary transition-all duration-300 disabled:opacity-50"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <ApperIcon 
+                      name="RefreshCw" 
+                      className={`w-4 h-4 ${weatherLoading ? 'animate-spin' : ''}`} 
+                    />
+                  </motion.button>
+                </div>
+              </div>
+
+              {weatherError && (
+                <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <p className="text-sm text-red-700 dark:text-red-400">
+                    {weatherError} - Showing cached data
+                  </p>
                 </div>
               )}
-              {lastWeatherUpdate && !weatherLoading && (
-                <span className="text-xs text-surface-500 dark:text-surface-400">
-                  Updated {format(lastWeatherUpdate, 'HH:mm')}
+
+              {/* Current Weather */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-secondary to-secondary-dark rounded-xl flex items-center justify-center">
+                    <ApperIcon name={currentWeather.current.icon} className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-xl lg:text-2xl font-bold text-surface-900 dark:text-white">
+                      {currentWeather.current.temperature}°F
+                    </div>
+                    <div className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
+                      {currentWeather.current.condition}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className={`text-lg lg:text-xl font-semibold ${weatherLoading ? 'animate-pulse' : ''} text-surface-900 dark:text-white`}>
+                    {typeof currentWeather.current.humidity === 'number' ? `${currentWeather.current.humidity}%` : currentWeather.current.humidity}
+                  </div>
+                  <div className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
+                    Humidity
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className={`text-lg lg:text-xl font-semibold ${weatherLoading ? 'animate-pulse' : ''} text-surface-900 dark:text-white`}>
+                    {typeof currentWeather.current.windSpeed === 'number' ? `${currentWeather.current.windSpeed} mph` : currentWeather.current.windSpeed}
+                  </div>
+                  <div className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
+                    Wind Speed
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white">
+                    {currentWeather.location ? currentWeather.location.split(' ').slice(-2).join(' ') : 'Unknown'}
+                  </div>
+                  <div className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
+                    Region
+                  </div>
+                </div>
+              </div>
+
+              {/* Weather Alerts/Recommendations */}
+              {!weatherLoading && currentWeather.current.temperature && (
+                <div className="mb-6">
+                  <div className="flex flex-wrap gap-2">
+                    {currentWeather.current.temperature > 85 && (
+                      <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                        High Heat - Increase Irrigation
+                      </span>
+                    )}
+                    {currentWeather.current.condition?.includes('Rain') && (
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                        Rain Expected - Postpone Spraying
+                      </span>
+                    )}
+                    {currentWeather.current.windSpeed > 15 && (
+                      <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+                        High Winds - Avoid Chemical Applications
+                      </span>
+                    )}
+                    {currentWeather.current.humidity < 30 && (
+                      <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
+                        Low Humidity - Monitor Soil Moisture
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* 5-Day Forecast */}
+              <div className="grid grid-cols-5 gap-2 lg:gap-4">
+                {(currentWeather.forecast && currentWeather.forecast.length > 0 ? currentWeather.forecast : Array(5).fill(null)).map((day, index) => (
+                  <motion.div
+                    key={index}
+                    className={`rounded-xl p-3 lg:p-4 text-center transition-all duration-300 ${
+                      weatherLoading || !day 
+                        ? 'bg-surface-100 dark:bg-surface-700 animate-pulse' 
+                        : 'bg-surface-50 dark:bg-surface-700 hover:bg-surface-100 dark:hover:bg-surface-600'
+                    }`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    whileHover={!weatherLoading && day ? { scale: 1.02 } : {}}
+                  >
+                    <div className="text-xs lg:text-sm font-medium text-surface-600 dark:text-surface-400 mb-2">
+                      {day?.day || (index === 0 ? 'Today' : index === 1 ? 'Tomorrow' : `Day ${index + 1}`)}
+                    </div>
+                    <div className="w-6 h-6 lg:w-8 lg:h-8 mx-auto mb-2">
+                      <ApperIcon 
+                        name={day?.icon || 'Cloud'} 
+                        className={`w-full h-full text-secondary ${!weatherLoading && day ? 'weather-icon-bounce' : ''}`} 
+                      />
+                    </div>
+                    <div className="text-sm lg:text-base font-semibold text-surface-900 dark:text-white mb-1">
+                      {day?.high ? `${day.high}°` : '--°'}
+                    </div>
+                    <div className="text-xs lg:text-sm text-surface-500 dark:text-surface-500 mb-2">
+                      {day?.low ? `${day.low}°` : '--°'}
+                    </div>
+                    <div className="text-xs text-surface-600 dark:text-surface-400">
+                      {day?.condition || 'Loading...'}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Upcoming Tasks & Recent Activity */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          {/* Upcoming Tasks */}
+          <div className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft">
+            <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-4 lg:mb-6 flex items-center">
+              <ApperIcon name="Clock" className="w-5 h-5 lg:w-6 lg:h-6 mr-2 text-secondary" />
+              Upcoming Tasks
+              {overdueTasks.length > 0 && (
+                <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                  {overdueTasks.length} overdue
                 </span>
               )}
-            </div>
-            <div className="flex items-center space-x-3">
-              <select
-                value={selectedLocation}
-                onChange={(e) => setSelectedLocation(e.target.value)}
-                className="px-3 py-1 lg:px-4 lg:py-2 text-sm lg:text-base bg-surface-50 dark:bg-surface-700 border border-surface-200 dark:border-surface-600 rounded-lg text-surface-900 dark:text-white focus:ring-2 focus:ring-secondary focus:border-transparent transition-all duration-300"
-              >
-                {Object.entries(locationOptions).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
-                ))}
-              </select>
-              <motion.button
-                onClick={() => fetchWeatherData(selectedLocation)}
-                disabled={weatherLoading}
-                className="p-2 rounded-lg bg-secondary/10 hover:bg-secondary/20 text-secondary transition-all duration-300 disabled:opacity-50"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <ApperIcon 
-                  name="RefreshCw" 
-                  className={`w-4 h-4 ${weatherLoading ? 'animate-spin' : ''}`} 
-                />
-              </motion.button>
+            </h3>
+            <div className="space-y-3 lg:space-y-4">
+              {upcomingTasks.slice(0, 5).map((task) => (
+                <motion.div
+                  key={task.id}
+                  className="flex items-center justify-between p-3 lg:p-4 bg-surface-50 dark:bg-surface-700 rounded-xl"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="flex-1">
+                    <h4 className="font-medium text-surface-900 dark:text-white text-sm lg:text-base">
+                      {task.title}
+                    </h4>
+                    <p className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
+                      {getFarmName(task.farmId)} • {format(task.dueDate, 'MMM dd')}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end space-y-1">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      task.priority === 'High' ? 'bg-red-100 text-red-700' :
+                      task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-green-100 text-green-700'
+                    }`}>
+                      {task.priority}
+                    </span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      task.status === 'Completed' ? 'bg-green-100 text-green-700' :
+                      task.status === 'In Progress' ? 'bg-blue-100 text-blue-700' :
+                      task.status === 'On Hold' ? 'bg-orange-100 text-orange-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {task.status}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+              {upcomingTasks.length === 0 && (
+                <div className="text-center py-6 lg:py-8 text-surface-500 dark:text-surface-500">
+                  <ApperIcon name="CheckCircle" className="w-8 h-8 lg:w-10 lg:h-10 mx-auto mb-2 lg:mb-3" />
+                  <p className="text-sm lg:text-base">No upcoming tasks</p>
+                </div>
+              )}
             </div>
           </div>
 
-          {weatherError && (
-            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-sm text-red-700 dark:text-red-400">
-                {weatherError} - Showing cached data
-              </p>
-            </div>
-          )}
-
-          {/* Current Weather */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-secondary to-secondary-dark rounded-xl flex items-center justify-center">
-                <ApperIcon name={currentWeather.current.icon} className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
-              </div>
-              <div>
-                <div className="text-xl lg:text-2xl font-bold text-surface-900 dark:text-white">
-                  {currentWeather.current.temperature}°F
-                </div>
-                <div className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
-                  {currentWeather.current.condition}
-                </div>
-              </div>
-            </div>
-            <div className="text-center">
-              <div className={`text-lg lg:text-xl font-semibold ${weatherLoading ? 'animate-pulse' : ''} text-surface-900 dark:text-white`}>
-                {typeof currentWeather.current.humidity === 'number' ? `${currentWeather.current.humidity}%` : currentWeather.current.humidity}
-              </div>
-              <div className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
-                Humidity
-              </div>
-            </div>
-            <div className="text-center">
-              <div className={`text-lg lg:text-xl font-semibold ${weatherLoading ? 'animate-pulse' : ''} text-surface-900 dark:text-white`}>
-                {typeof currentWeather.current.windSpeed === 'number' ? `${currentWeather.current.windSpeed} mph` : currentWeather.current.windSpeed}
-              </div>
-              <div className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
-                Wind Speed
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white">
-                {currentWeather.location ? currentWeather.location.split(' ').slice(-2).join(' ') : 'Unknown'}
-              </div>
-              <div className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
-                Region
-              </div>
-            </div>
-          </div>
-
-          {/* Weather Alerts/Recommendations */}
-          {!weatherLoading && currentWeather.current.temperature && (
-            <div className="mb-6">
-              <div className="flex flex-wrap gap-2">
-                {currentWeather.current.temperature > 85 && (
-                  <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
-                    High Heat - Increase Irrigation
+          {/* Recent Expenses */}
+          <div className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft">
+            <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-4 lg:mb-6 flex items-center">
+              <ApperIcon name="TrendingUp" className="w-5 h-5 lg:w-6 lg:h-6 mr-2 text-secondary" />
+              Recent Expenses
+            </h3>
+            <div className="space-y-3 lg:space-y-4">
+              {expenses.slice(-5).reverse().map((expense) => (
+                <motion.div
+                  key={expense.id}
+                  className="flex items-center justify-between p-3 lg:p-4 bg-surface-50 dark:bg-surface-700 rounded-xl"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="flex-1">
+                    <h4 className="font-medium text-surface-900 dark:text-white text-sm lg:text-base">
+                      {expense.description}
+                    </h4>
+                    <p className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
+                      {expense.category} • {format(expense.date, 'MMM dd')}
+                    </p>
+                  </div>
+                  <span className="font-semibold text-surface-900 dark:text-white text-sm lg:text-base">
+                    ${expense.amount.toLocaleString()}
                   </span>
-                )}
-                {currentWeather.current.condition?.includes('Rain') && (
-                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                    Rain Expected - Postpone Spraying
-                  </span>
-                )}
-                {currentWeather.current.windSpeed > 15 && (
-                  <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
-                    High Winds - Avoid Chemical Applications
-                  </span>
-                )}
-                {currentWeather.current.humidity < 30 && (
-                  <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
-                    Low Humidity - Monitor Soil Moisture
-                  </span>
-                )}
-              </div>
+                </motion.div>
+              ))}
+              {expenses.length === 0 && (
+                <div className="text-center py-6 lg:py-8 text-surface-500 dark:text-surface-500">
+                  <ApperIcon name="Receipt" className="w-8 h-8 lg:w-10 lg:h-10 mx-auto mb-2 lg:mb-3" />
+                  <p className="text-sm lg:text-base">No expenses recorded</p>
+                </div>
+              )}
             </div>
-          )}
-
-          {/* 5-Day Forecast */}
-          <div className="grid grid-cols-5 gap-2 lg:gap-4">
-            {(currentWeather.forecast && currentWeather.forecast.length > 0 ? currentWeather.forecast : Array(5).fill(null)).map((day, index) => (
-              <motion.div
-                key={index}
-                className={`rounded-xl p-3 lg:p-4 text-center transition-all duration-300 ${
-                  weatherLoading || !day 
-                    ? 'bg-surface-100 dark:bg-surface-700 animate-pulse' 
-                    : 'bg-surface-50 dark:bg-surface-700 hover:bg-surface-100 dark:hover:bg-surface-600'
-                }`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                whileHover={!weatherLoading && day ? { scale: 1.02 } : {}}
-              >
-                <div className="text-xs lg:text-sm font-medium text-surface-600 dark:text-surface-400 mb-2">
-                  {day?.day || (index === 0 ? 'Today' : index === 1 ? 'Tomorrow' : `Day ${index + 1}`)}
-                </div>
-                <div className="w-6 h-6 lg:w-8 lg:h-8 mx-auto mb-2">
-                  <ApperIcon 
-                    name={day?.icon || 'Cloud'} 
-                    className={`w-full h-full text-secondary ${!weatherLoading && day ? 'weather-icon-bounce' : ''}`} 
-                  />
-                </div>
-                <div className="text-sm lg:text-base font-semibold text-surface-900 dark:text-white mb-1">
-                  {day?.high ? `${day.high}°` : '--°'}
-                </div>
-                <div className="text-xs lg:text-sm text-surface-500 dark:text-surface-500 mb-2">
-                  {day?.low ? `${day.low}°` : '--°'}
-                </div>
-                <div className="text-xs text-surface-600 dark:text-surface-400">
-                  {day?.condition || 'Loading...'}
-                </div>
-              </motion.div>
-            ))}
           </div>
         </div>
       </div>
-);
+    );
+  };
   };
 
 const renderFarms = () => {
