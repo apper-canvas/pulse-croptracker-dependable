@@ -1529,7 +1529,6 @@ const renderTasks = () => {
                         <ApperIcon name="Trash2" className="w-4 h-4" />
                       </button>
                     </div>
-                    </div>
                   </div>
                   
                   <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-3">
@@ -1563,8 +1562,7 @@ const renderTasks = () => {
                     </div>
                   </div>
                 </div>
-</div>
-</div>
+              </div>
             </motion.div>
           ))}
         </div>
