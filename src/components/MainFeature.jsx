@@ -434,8 +434,10 @@ const MainFeature = ({ darkMode, searchQuery = '' }) => {
         description: 'Inspect and test all irrigation components',
         dueDate: new Date('2024-04-15'),
         priority: 'High',
-completed: false,
+priority: 'High',
+        completed: false,
         status: 'Not Started'
+      },
       {
         id: '2',
         farmId: '2',
@@ -444,9 +446,9 @@ completed: false,
         description: 'Test soil pH levels across all fields',
         dueDate: new Date('2024-04-20'),
         priority: 'Medium',
-completed: false,
+        completed: false,
         status: 'In Progress'
-    ];
+      }
 
     const sampleExpenses = [
       {
