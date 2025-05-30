@@ -401,40 +401,6 @@ const [selectedLocation, setSelectedLocation] = useState('california');
           ))}
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft">
-          <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-4 lg:mb-6 flex items-center">
-            <ApperIcon name="Zap" className="w-5 h-5 lg:w-6 lg:h-6 mr-2 text-secondary" />
-            Quick Actions
-          </h3>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-            {[
-              { label: 'Add Farm', icon: 'Plus', action: () => openModal('farm') },
-              { label: 'Add Crop', icon: 'Wheat', action: () => openModal('crop') },
-              { label: 'Add Task', icon: 'CalendarPlus', action: () => openModal('task') },
-              { label: 'Add Expense', icon: 'Receipt', action: () => openModal('expense') }
-            ].map((action, index) => (
-              <motion.button
-                key={action.label}
-                onClick={action.action}
-                className="flex flex-col items-center space-y-2 lg:space-y-3 p-3 lg:p-4 rounded-xl bg-surface-50 dark:bg-surface-700 hover:bg-surface-100 dark:hover:bg-surface-600 transition-all duration-300 neu-button"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center">
-                  <ApperIcon name={action.icon} className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
-                </div>
-                <span className="text-xs lg:text-sm font-medium text-surface-700 dark:text-surface-300">
-                  {action.label}
-                </span>
-              </motion.button>
-            ))}
-          </div>
-        </div>
-
         {/* Upcoming Tasks & Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           {/* Upcoming Tasks */}
