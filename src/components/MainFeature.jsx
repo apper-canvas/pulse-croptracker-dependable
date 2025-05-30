@@ -5,6 +5,162 @@ import ApperIcon from './ApperIcon';
 import { format, addDays, isAfter, isBefore, startOfDay } from 'date-fns';
 import Chart from 'react-apexcharts';
 import axios from 'axios';
+// Notification Service
+const NotificationService = {
+  // Request notification permission
+  async requestPermission() {
+    if (!('Notification' in window)) {
+      console.warn('This browser does not support desktop notifications');
+      return 'denied';
+    }
+
+    if (Notification.permission === 'granted') {
+      return 'granted';
+    }
+
+    if (Notification.permission !== 'denied') {
+      const permission = await Notification.requestPermission();
+      return permission;
+    }
+
+    return Notification.permission;
+  },
+
+  // Show browser notification
+  showBrowserNotification(title, options = {}) {
+    if (Notification.permission === 'granted') {
+      const notification = new Notification(title, {
+        icon: '/favicon.ico',
+        badge: '/favicon.ico',
+        ...options
+      });
+
+      // Auto close after 5 seconds
+      setTimeout(() => notification.close(), 5000);
+      
+      return notification;
+    }
+    return null;
+  },
+
+  // Show task reminder notification
+  showTaskReminder(task, type = 'upcoming') {
+    const farmName = this.getFarmName ? this.getFarmName(task.farmId) : 'Unknown Farm';
+    
+    let title, body, icon;
+    
+    switch (type) {
+      case 'overdue':
+        title = '🚨 Overdue Task';
+        body = `"${task.title}" was due ${format(task.dueDate, 'MMM dd')} at ${farmName}`;
+        icon = '🚨';
+        break;
+      case 'due_today':
+        title = '⏰ Task Due Today';
+        body = `"${task.title}" is due today at ${farmName}`;
+        icon = '⏰';
+        break;
+      case 'due_tomorrow':
+        title = '📅 Task Due Tomorrow';
+        body = `"${task.title}" is due tomorrow at ${farmName}`;
+        icon = '📅';
+        break;
+      case 'upcoming':
+        title = '🔔 Upcoming Task';
+        body = `"${task.title}" is due ${format(task.dueDate, 'MMM dd')} at ${farmName}`;
+        icon = '🔔';
+        break;
+      default:
+        title = 'Task Reminder';
+        body = `Task: ${task.title}`;
+        icon = '📋';
+    }
+
+    // Show browser notification
+    this.showBrowserNotification(title, {
+      body,
+      icon: icon,
+      tag: `task-${task.id}`,
+      data: { taskId: task.id, type }
+    });
+
+    // Show toast notification
+    const toastType = type === 'overdue' ? 'error' : type === 'due_today' ? 'warning' : 'info';
+    toast[toastType](`${icon} ${body}`, {
+      autoClose: type === 'overdue' ? 8000 : 5000,
+      hideProgressBar: false
+    });
+  },
+
+  // Show task completion notification
+  showTaskComplete(task) {
+    const farmName = this.getFarmName ? this.getFarmName(task.farmId) : 'Unknown Farm';
+    const title = '✅ Task Completed';
+    const body = `"${task.title}" marked as complete at ${farmName}`;
+
+    this.showBrowserNotification(title, {
+      body,
+      icon: '✅',
+      tag: `task-complete-${task.id}`
+    });
+
+    toast.success(`✅ ${body}`);
+  },
+
+  // Show task creation notification
+  showTaskCreated(task) {
+    const farmName = this.getFarmName ? this.getFarmName(task.farmId) : 'Unknown Farm';
+    const title = '📝 New Task Created';
+    const body = `"${task.title}" created for ${farmName}, due ${format(task.dueDate, 'MMM dd')}`;
+
+    toast.info(`📝 ${body}`);
+  },
+
+  // Get notification preferences from localStorage
+  getPreferences() {
+    const defaultPrefs = {
+      browserNotifications: true,
+      toastNotifications: true,
+      overdueReminders: true,
+      upcomingReminders: true,
+      completionNotifications: true,
+      reminderFrequency: 5 // minutes
+    };
+
+    try {
+      const stored = localStorage.getItem('taskNotificationPreferences');
+      return stored ? { ...defaultPrefs, ...JSON.parse(stored) } : defaultPrefs;
+    } catch (error) {
+      console.error('Error loading notification preferences:', error);
+      return defaultPrefs;
+    }
+  },
+
+  // Save notification preferences
+  savePreferences(preferences) {
+    try {
+      localStorage.setItem('taskNotificationPreferences', JSON.stringify(preferences));
+    } catch (error) {
+      console.error('Error saving notification preferences:', error);
+    }
+  },
+
+  // Initialize notification service
+  async initialize() {
+    const preferences = this.getPreferences();
+    
+    if (preferences.browserNotifications) {
+      const permission = await this.requestPermission();
+      if (permission === 'granted') {
+        console.log('✅ Browser notifications enabled');
+      } else {
+        console.log('❌ Browser notifications disabled');
+      }
+    }
+    
+    return preferences;
+  }
+};
 
 // ImageUpload Component
 const ImageUpload = ({ images = [], onChange, label = "Upload Images" }) => {
@@ -294,6 +450,10 @@ const MainFeature = ({ darkMode, searchQuery = '' }) => {
   const [weatherData, setWeatherData] = useState({});
   const [weatherLoading, setWeatherLoading] = useState(true);
   const [weatherError, setWeatherError] = useState(null);
+  
+  // Notification state
+  const [notificationPreferences, setNotificationPreferences] = useState(null);
+  const [lastNotificationCheck, setLastNotificationCheck] = useState(null);
   const [lastWeatherUpdate, setLastWeatherUpdate] = useState(null);
 
   // Location data for weather service
@@ -303,6 +463,110 @@ const MainFeature = ({ darkMode, searchQuery = '' }) => {
     kansas: 'Kansas Wheat Belt',
     texas: 'Texas Panhandle',
     nebraska: 'Nebraska Plains'
+  };
+// Initialize notification service and set up periodic checks
+  useEffect(() => {
+    const initializeNotifications = async () => {
+      // Set up reference for NotificationService to access farm names
+      NotificationService.getFarmName = getFarmName;
+      
+      // Initialize notification service
+      const preferences = await NotificationService.initialize();
+      setNotificationPreferences(preferences);
+      
+      // Initial notification check
+      checkTaskNotifications();
+    };
+
+    initializeNotifications();
+
+    // Set up periodic notification checks
+    const notificationInterval = setInterval(() => {
+      if (notificationPreferences?.upcomingReminders || notificationPreferences?.overdueReminders) {
+        checkTaskNotifications();
+      }
+    }, (notificationPreferences?.reminderFrequency || 5) * 60 * 1000); // Default 5 minutes
+
+    return () => clearInterval(notificationInterval);
+  }, [tasks, farms, notificationPreferences?.reminderFrequency]);
+
+  // Check for tasks that need notifications
+  const checkTaskNotifications = () => {
+    if (!notificationPreferences || tasks.length === 0) return;
+
+    const now = new Date();
+    const today = startOfDay(now);
+    const tomorrow = addDays(today, 1);
+    const upcoming = addDays(today, 7);
+
+    tasks.forEach(task => {
+      if (task.completed) return;
+
+      const taskDate = startOfDay(task.dueDate);
+      const taskId = `task-notification-${task.id}`;
+      
+      // Avoid duplicate notifications (check if we've notified in the last hour)
+      const lastCheck = lastNotificationCheck || new Date(0);
+      const timeSinceLastCheck = now - lastCheck;
+      
+      // Overdue tasks
+      if (notificationPreferences.overdueReminders && isBefore(taskDate, today)) {
+        // Only notify about overdue tasks once per day
+        if (timeSinceLastCheck > 23 * 60 * 60 * 1000) { // 23 hours
+          NotificationService.showTaskReminder(task, 'overdue');
+        }
+      }
+      // Due today
+      else if (notificationPreferences.upcomingReminders && taskDate.getTime() === today.getTime()) {
+        // Notify about today's tasks once in the morning
+        if (timeSinceLastCheck > 6 * 60 * 60 * 1000 && now.getHours() >= 8) { // 6 hours, after 8am
+          NotificationService.showTaskReminder(task, 'due_today');
+        }
+      }
+      // Due tomorrow
+      else if (notificationPreferences.upcomingReminders && taskDate.getTime() === tomorrow.getTime()) {
+        // Notify about tomorrow's tasks once per day
+        if (timeSinceLastCheck > 23 * 60 * 60 * 1000) {
+          NotificationService.showTaskReminder(task, 'due_tomorrow');
+        }
+      }
+      // Upcoming in next 7 days
+      else if (notificationPreferences.upcomingReminders && 
+               isAfter(taskDate, tomorrow) && 
+               isBefore(taskDate, upcoming)) {
+        // Notify about upcoming tasks less frequently (once per 2 days)
+        if (timeSinceLastCheck > 47 * 60 * 60 * 1000) { // 47 hours
+          NotificationService.showTaskReminder(task, 'upcoming');
+        }
+      }
+    });
+
+    setLastNotificationCheck(now);
+  };
+
+  // Update notification preferences
+  const updateNotificationPreferences = (newPreferences) => {
+    setNotificationPreferences(newPreferences);
+    NotificationService.savePreferences(newPreferences);
+  };
+
+  // Request notification permission
+  const requestNotificationPermission = async () => {
+    const permission = await NotificationService.requestPermission();
+    
+    if (permission === 'granted') {
+      toast.success('🔔 Notifications enabled! You\'ll receive alerts for upcoming and overdue tasks.');
+      updateNotificationPreferences({ 
+        ...notificationPreferences, 
+        browserNotifications: true 
+      });
+    } else {
+      toast.warning('📱 Browser notifications blocked. You\'ll still receive in-app notifications.');
+      updateNotificationPreferences({ 
+        ...notificationPreferences, 
+        browserNotifications: false 
+      });
+    }
   };
 
   // Fetch weather data
@@ -598,6 +862,10 @@ status: formData.status || 'Not Started'
         } else {
           setTasks([...tasks, taskData]);
           toast.success('Task added successfully!');
+// Show task creation notification
+          if (notificationPreferences?.completionNotifications) {
+            NotificationService.showTaskCreated(taskData);
+          }
         }
         break;
 
@@ -623,18 +891,27 @@ status: formData.status || 'Not Started'
   };
 
   const toggleTaskComplete = (taskId) => {
-    setTasks(tasks.map(task => 
-      task.id === taskId 
-        ? { ...task, completed: !task.completed }
-        : task
+const task = tasks.find(t => t.id === taskId);
+    const wasCompleted = task?.completed || false;
+    
+    setTasks(tasks.map(t => 
+      t.id === taskId 
+        ? { ...t, completed: !t.completed }
+        : t
     ));
     
-    const task = tasks.find(t => t.id === taskId);
     if (task) {
-      toast.success(task.completed ? 'Task marked as incomplete' : 'Task completed!');
+      const newStatus = wasCompleted ? 'Task marked as incomplete' : 'Task completed!';
+      toast.success(newStatus);
+      
+      // Show completion notification
+      if (!wasCompleted && notificationPreferences?.completionNotifications) {
+        NotificationService.showTaskComplete({ ...task, completed: true });
+      }
     }
-  };
+};
 
+  const deleteItem = (type, id) => {
   const deleteItem = (type, id) => {
     switch (type) {
       case 'farm':
@@ -1052,6 +1329,119 @@ const renderReports = () => {
   };
 
   const renderOverview = () => {
+// Notification Settings Panel
+    const renderNotificationSettings = () => (
+      <div className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft">
+        <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-4 lg:mb-6 flex items-center">
+          <ApperIcon name="Bell" className="w-5 h-5 lg:w-6 lg:h-6 mr-2 text-secondary" />
+          Notification Settings
+        </h3>
+        
+        {notificationPreferences && (
+          <div className="space-y-4">
+            {/* Browser Notifications */}
+            <div className="flex items-center justify-between p-3 bg-surface-50 dark:bg-surface-700 rounded-xl">
+              <div className="flex-1">
+                <h4 className="font-medium text-surface-900 dark:text-white">Browser Notifications</h4>
+                <p className="text-sm text-surface-600 dark:text-surface-400">
+                  Show desktop notifications even when tab is not active
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                {Notification.permission === 'default' && (
+                  <button
+                    onClick={requestNotificationPermission}
+                    className="px-3 py-1 bg-primary text-white rounded-lg text-sm hover:bg-primary-dark transition-colors"
+                  >
+                    Enable
+                  </button>
+                )}
+                {Notification.permission === 'granted' && (
+                  <span className="text-green-600 text-sm">✓ Enabled</span>
+                )}
+                {Notification.permission === 'denied' && (
+                  <span className="text-red-600 text-sm">✗ Blocked</span>
+                )}
+              </div>
+            </div>
+
+            {/* Notification Types */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-surface-900 dark:text-white">Overdue Task Alerts</span>
+                <input
+                  type="checkbox"
+                  checked={notificationPreferences.overdueReminders}
+                  onChange={(e) => updateNotificationPreferences({
+                    ...notificationPreferences,
+                    overdueReminders: e.target.checked
+                  })}
+                  className="w-4 h-4 text-primary rounded focus:ring-primary"
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-surface-900 dark:text-white">Upcoming Task Reminders</span>
+                <input
+                  type="checkbox"
+                  checked={notificationPreferences.upcomingReminders}
+                  onChange={(e) => updateNotificationPreferences({
+                    ...notificationPreferences,
+                    upcomingReminders: e.target.checked
+                  })}
+                  className="w-4 h-4 text-primary rounded focus:ring-primary"
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-surface-900 dark:text-white">Task Completion Alerts</span>
+                <input
+                  type="checkbox"
+                  checked={notificationPreferences.completionNotifications}
+                  onChange={(e) => updateNotificationPreferences({
+                    ...notificationPreferences,
+                    completionNotifications: e.target.checked
+                  })}
+                  className="w-4 h-4 text-primary rounded focus:ring-primary"
+                />
+              </div>
+            </div>
+
+            {/* Reminder Frequency */}
+            <div className="flex items-center justify-between">
+              <span className="text-surface-900 dark:text-white">Check Frequency</span>
+              <select
+                value={notificationPreferences.reminderFrequency}
+                onChange={(e) => updateNotificationPreferences({
+                  ...notificationPreferences,
+                  reminderFrequency: parseInt(e.target.value)
+                })}
+                className="px-3 py-1 bg-surface-50 dark:bg-surface-700 border border-surface-200 dark:border-surface-600 rounded-lg text-surface-900 dark:text-white"
+              >
+                <option value={1}>Every minute</option>
+                <option value={5}>Every 5 minutes</option>
+                <option value={15}>Every 15 minutes</option>
+                <option value={30}>Every 30 minutes</option>
+                <option value={60}>Every hour</option>
+              </select>
+            </div>
+
+            {/* Test Notification */}
+            <button
+              onClick={() => {
+                NotificationService.showTaskReminder({
+                  id: 'test',
+                  title: 'Test Notification',
+                  farmId: farms[0]?.id || '1',
+                  dueDate: new Date()
+                }, 'upcoming');
+              }}
+              className="w-full px-4 py-2 bg-secondary text-white rounded-xl hover:bg-secondary-dark transition-colors"
+            >
+              Test Notification
+            </button>
+          </div>
+        )}
+      </div>
+    );
     const upcomingTasks = getUpcomingTasks();
     const overdueTasks = getOverdueTasks();
     const totalExpenses = getTotalExpenses();
@@ -1088,6 +1478,9 @@ const renderReports = () => {
               </div>
             </motion.div>
           ))}
+{/* Notification Settings */}
+        <div className="lg:col-span-2">
+          {renderNotificationSettings()}
         </div>
 
         {/* Upcoming Tasks & Recent Activity */}
