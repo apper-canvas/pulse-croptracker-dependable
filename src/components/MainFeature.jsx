@@ -1322,11 +1322,9 @@ const renderReports = () => {
               </div>
             </div>
           )}
+)}
           </div>
-</div>
-{/* 5-Day Forecast */}
-<>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
+        </div>
             {(currentWeather.forecast && currentWeather.forecast.length > 0 ? currentWeather.forecast : Array(5).fill(null)).map((day, index) => (
               <motion.div
                 key={index}
