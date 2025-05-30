@@ -807,6 +807,129 @@ case 'crop':
       </div>
     );
   };
+const renderReports = () => {
+    return (
+      <div className="space-y-6 lg:space-y-8">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl lg:text-2xl font-bold text-surface-900 dark:text-white">
+            Reports
+          </h2>
+          <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400">
+            Expense tracking and financial reports
+          </p>
+        </div>
+
+        {/* Expense Reports */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          {renderExpenseChart()}
+          {renderCategoryDonutChart()}
+        </div>
+
+        {/* Summary Stats */}
+        <div className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft">
+          <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-4 lg:mb-6">
+            Financial Summary
+          </h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            <div className="text-center">
+              <div className="text-2xl lg:text-3xl font-bold text-surface-900 dark:text-white">
+                ${getTotalExpenses().toLocaleString()}
+              </div>
+              <div className="text-sm lg:text-base text-surface-600 dark:text-surface-400">
+                Total Expenses
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl lg:text-3xl font-bold text-surface-900 dark:text-white">
+                {Object.keys(getExpensesByCategory()).length}
+              </div>
+              <div className="text-sm lg:text-base text-surface-600 dark:text-surface-400">
+                Expense Categories
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl lg:text-3xl font-bold text-surface-900 dark:text-white">
+                {expenses.length}
+              </div>
+              <div className="text-sm lg:text-base text-surface-600 dark:text-surface-400">
+                Total Transactions
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl lg:text-3xl font-bold text-surface-900 dark:text-white">
+                ${expenses.length > 0 ? (getTotalExpenses() / expenses.length).toFixed(0) : '0'}
+              </div>
+              <div className="text-sm lg:text-base text-surface-600 dark:text-surface-400">
+                Avg. Transaction
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderAnalytics = () => {
+    return (
+      <div className="space-y-6 lg:space-y-8">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl lg:text-2xl font-bold text-surface-900 dark:text-white">
+            Analytics
+          </h2>
+          <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400">
+            Performance insights and trend analysis
+          </p>
+        </div>
+
+        {/* Performance Analytics */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          {renderRevenueChart()}
+          {renderFarmPerformanceChart()}
+        </div>
+
+        {/* Key Metrics */}
+        <div className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft">
+          <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-4 lg:mb-6">
+            Key Performance Indicators
+          </h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            <div className="text-center">
+              <div className="text-2xl lg:text-3xl font-bold text-green-600">
+                ${sampleRevenue.reduce((total, rev) => total + rev.amount, 0).toLocaleString()}
+              </div>
+              <div className="text-sm lg:text-base text-surface-600 dark:text-surface-400">
+                Total Revenue
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl lg:text-3xl font-bold text-blue-600">
+                {((sampleRevenue.reduce((total, rev) => total + rev.amount, 0) - getTotalExpenses()) / sampleRevenue.reduce((total, rev) => total + rev.amount, 0) * 100).toFixed(1)}%
+              </div>
+              <div className="text-sm lg:text-base text-surface-600 dark:text-surface-400">
+                Profit Margin
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl lg:text-3xl font-bold text-purple-600">
+                {farms.length > 0 ? (sampleRevenue.reduce((total, rev) => total + rev.amount, 0) / farms.length).toFixed(0) : '0'}
+              </div>
+              <div className="text-sm lg:text-base text-surface-600 dark:text-surface-400">
+                Revenue per Farm
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl lg:text-3xl font-bold text-orange-600">
+                {crops.reduce((total, crop) => total + crop.area, 0)}
+              </div>
+              <div className="text-sm lg:text-base text-surface-600 dark:text-surface-400">
+                Total Acres Cultivated
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderOverview = () => {
     const upcomingTasks = getUpcomingTasks();
@@ -1637,13 +1760,15 @@ const renderExpenses = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
       {/* Tab Navigation */}
-      <div className="flex space-x-1 sm:space-x-2 mb-6 lg:mb-8 overflow-x-auto scrollbar-hide">
+<div className="flex flex-wrap gap-2 lg:gap-3 mb-6 lg:mb-8 p-2 lg:p-3 bg-surface-50/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl border border-surface-200/50 dark:border-surface-700/50 shadow-soft">
         {[
           { id: 'overview', label: 'Overview', icon: 'LayoutDashboard' },
           { id: 'farms', label: 'Farms', icon: 'MapPin' },
           { id: 'crops', label: 'Crops', icon: 'Wheat' },
           { id: 'tasks', label: 'Tasks', icon: 'Calendar' },
-          { id: 'expenses', label: 'Expenses', icon: 'DollarSign' }
+          { id: 'expenses', label: 'Expenses', icon: 'DollarSign' },
+          { id: 'reports', label: 'Reports', icon: 'FileText' },
+          { id: 'analytics', label: 'Analytics', icon: 'TrendingUp' }
         ].map((tab) => (
           <motion.button
             key={tab.id}
@@ -1661,6 +1786,7 @@ const renderExpenses = () => {
           </motion.button>
         ))}
       </div>
+      </div>
 
       {/* Content */}
       <AnimatePresence mode="wait">
@@ -1676,8 +1802,6 @@ const renderExpenses = () => {
           {activeTab === 'crops' && renderCrops()}
           {activeTab === 'tasks' && renderTasks()}
           {activeTab === 'expenses' && renderExpenses()}
-        </motion.div>
-      </AnimatePresence>
 
       {/* Modal */}
       <AnimatePresence>
