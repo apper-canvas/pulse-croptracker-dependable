@@ -1055,16 +1055,6 @@ const renderReports = () => {
             </div>
           </div>
         </div>
-{/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-          {renderExpenseChart()}
-          {renderRevenueChart()}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-          {renderFarmPerformanceChart()}
-          {renderCategoryDonutChart()}
-        </div>
 {/* Weather Widget */}
         <div className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 lg:mb-6 space-y-2 sm:space-y-0">
