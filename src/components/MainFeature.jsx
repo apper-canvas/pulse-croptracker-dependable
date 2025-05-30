@@ -371,7 +371,6 @@ const MainFeature = ({ darkMode, searchQuery = '' }) => {
     current: { temperature: '--', condition: 'Loading...', humidity: '--', windSpeed: '--', icon: 'Cloud' },
     forecast: []
   };
-  const currentWeather = weatherData[selectedLocation];
 // Sample revenue data for charts
   const sampleRevenue = [
     { farmId: '1', amount: 3500.00, source: 'Crop Sales', date: new Date('2024-01-25') },
@@ -1360,7 +1359,7 @@ const renderReports = () => {
               </motion.div>
             ))}
           </div>
-        </div>
+<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
       </div>
     );
   };
