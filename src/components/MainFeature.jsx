@@ -2133,6 +2133,22 @@ const ModalForm = ({ type, initialData, onSubmit, onCancel, farms, crops }) => {
           <option value="High">High</option>
         </select>
       </div>
+<div>
+        <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+          Status
+        </label>
+        <select
+          value={formData.status || 'Not Started'}
+          onChange={(e) => handleChange('status', e.target.value)}
+          className="w-full px-4 py-3 rounded-xl border border-surface-300 dark:border-surface-600 bg-white dark:bg-surface-700 text-surface-900 dark:text-white focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-300"
+          required
+        >
+          <option value="Not Started">Not Started</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+          <option value="On Hold">On Hold</option>
+        </select>
+      </div>
       <div className="flex space-x-3 pt-4">
         <button
           type="submit"
