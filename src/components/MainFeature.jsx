@@ -1476,11 +1476,16 @@ const renderReports = () => {
               </div>
             </motion.div>
           ))}
-{/* Notification Settings */}
-        <div className="lg:col-span-2">
-          {renderNotificationSettings()}
-        </div>
+</div>
 
+        {/* Notification Settings and Tasks Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="lg:col-span-2">
+            {renderNotificationSettings()}
+          </div>
+
+          {/* Weather Widget */}
+          <div className="space-y-6">
         {/* Upcoming Tasks & Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           {/* Upcoming Tasks */}
@@ -1576,8 +1581,9 @@ const renderReports = () => {
             </div>
           </div>
         </div>
+</div>
 {/* Real-time Weather Widget */}
-        <div className={`rounded-2xl p-4 lg:p-6 border shadow-soft transition-all duration-300 ${
+</div>
           weatherLoading 
             ? 'weather-loading' 
             : currentWeather.current.condition === 'Sunny' || currentWeather.current.condition === 'Clear'
