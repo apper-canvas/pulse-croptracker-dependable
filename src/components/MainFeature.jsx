@@ -1786,7 +1786,6 @@ const renderExpenses = () => {
           </motion.button>
         ))}
       </div>
-      </div>
 
       {/* Content */}
       <AnimatePresence mode="wait">
@@ -1802,6 +1801,10 @@ const renderExpenses = () => {
           {activeTab === 'crops' && renderCrops()}
           {activeTab === 'tasks' && renderTasks()}
           {activeTab === 'expenses' && renderExpenses()}
+{activeTab === 'reports' && renderReports()}
+          {activeTab === 'analytics' && renderAnalytics()}
+        </motion.div>
+      </AnimatePresence>
 
       {/* Modal */}
       <AnimatePresence>
