@@ -1499,36 +1499,36 @@ const renderTasks = () => {
                       {task.title}
                     </h3>
 <div className="flex flex-col space-y-1">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          task.priority === 'High' ? 'bg-red-100 text-red-700' :
-                          task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-green-100 text-green-700'
-                        }`}>
-                          {task.priority}
-                        </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          task.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                          task.status === 'In Progress' ? 'bg-blue-100 text-blue-700' :
-                          task.status === 'On Hold' ? 'bg-orange-100 text-orange-700' :
-                          'bg-gray-100 text-gray-700'
-                        }`}>
-                          {task.status}
-                        </span>
-</div>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => openModal('task', task)}
-                          className="p-1 text-surface-600 hover:text-accent transition-colors"
-                        >
-                          <ApperIcon name="Edit2" className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => deleteItem('task', task.id)}
-                          className="p-1 text-surface-600 hover:text-red-500 transition-colors"
-                        >
-                          <ApperIcon name="Trash2" className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        task.priority === 'High' ? 'bg-red-100 text-red-700' :
+                        task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-green-100 text-green-700'
+                      }`}>
+                        {task.priority}
+                      </span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        task.status === 'Completed' ? 'bg-green-100 text-green-700' :
+                        task.status === 'In Progress' ? 'bg-blue-100 text-blue-700' :
+                        task.status === 'On Hold' ? 'bg-orange-100 text-orange-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {task.status}
+                      </span>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => openModal('task', task)}
+                        className="p-1 text-surface-600 hover:text-accent transition-colors"
+                      >
+                        <ApperIcon name="Edit2" className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => deleteItem('task', task.id)}
+                        className="p-1 text-surface-600 hover:text-red-500 transition-colors"
+                      >
+                        <ApperIcon name="Trash2" className="w-4 h-4" />
+                      </button>
+                    </div>
                     </div>
                   </div>
                   
