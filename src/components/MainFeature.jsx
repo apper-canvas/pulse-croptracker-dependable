@@ -1020,259 +1020,323 @@ const renderFarms = () => {
       </div>
     );
 };
-  const renderCrops = () => (
-    <div className="space-y-6 lg:space-y-8">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
-        <h2 className="text-xl lg:text-2xl font-bold text-surface-900 dark:text-white">
-          Crop Management
-        </h2>
-        <motion.button
-          onClick={() => openModal('crop')}
-          className="flex items-center space-x-2 bg-gradient-to-r from-secondary to-secondary-dark text-white px-4 lg:px-6 py-2 lg:py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <ApperIcon name="Plus" className="w-4 h-4 lg:w-5 lg:h-5" />
-          <span>Add Crop</span>
-        </motion.button>
-      </div>
+const renderCrops = () => {
+    // Filter crops based on search query
+    const filteredCrops = crops.filter(crop => {
+      if (!searchQuery.trim()) return true;
+      
+      const query = searchQuery.toLowerCase();
+      return (
+        crop.name.toLowerCase().includes(query) ||
+        crop.variety.toLowerCase().includes(query) ||
+        getFarmName(crop.farmId).toLowerCase().includes(query)
+      );
+    });
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
-        {crops.map((crop, index) => (
-          <motion.div
-            key={crop.id}
-            className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft hover:shadow-card transition-all duration-300"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            whileHover={{ scale: 1.02 }}
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-secondary to-secondary-dark rounded-xl flex items-center justify-center">
-                <ApperIcon name="Wheat" className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => openModal('crop', crop)}
-                  className="p-2 text-surface-600 hover:text-secondary transition-colors"
-                >
-                  <ApperIcon name="Edit2" className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => deleteItem('crop', crop.id)}
-                  className="p-2 text-surface-600 hover:text-red-500 transition-colors"
-                >
-                  <ApperIcon name="Trash2" className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-            
-            <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-1">
-              {crop.name}
-            </h3>
-            <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-3">
-              {crop.variety}
-            </p>
-            <p className="text-xs lg:text-sm text-surface-500 dark:text-surface-500 mb-4">
-              {getFarmName(crop.farmId)}
-            </p>
-            
-            <div className="space-y-2 mb-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-surface-600 dark:text-surface-400">Area:</span>
-                <span className="text-surface-900 dark:text-white font-medium">{crop.area} acres</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-surface-600 dark:text-surface-400">Planted:</span>
-                <span className="text-surface-900 dark:text-white font-medium">
-                  {format(crop.plantingDate, 'MMM dd, yyyy')}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-surface-600 dark:text-surface-400">Harvest:</span>
-                <span className="text-surface-900 dark:text-white font-medium">
-                  {format(crop.expectedHarvestDate, 'MMM dd, yyyy')}
-                </span>
-              </div>
-            </div>
-            
-            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-              crop.status === 'Growing' ? 'bg-green-100 text-green-700' :
-              crop.status === 'Planted' ? 'bg-blue-100 text-blue-700' :
-              crop.status === 'Harvested' ? 'bg-gray-100 text-gray-700' :
-              'bg-yellow-100 text-yellow-700'
-            }`}>
-              {crop.status}
-            </span>
-          </motion.div>
-        ))}
-      </div>
-
-      {crops.length === 0 && (
-        <div className="text-center py-12 lg:py-16">
-          <ApperIcon name="Wheat" className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 lg:mb-6 text-surface-400" />
-          <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-2">
-            No crops planted
-          </h3>
-          <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-6 lg:mb-8">
-            Add your first crop to start tracking your planting and harvest cycles.
-          </p>
+    return (
+      <div className="space-y-6 lg:space-y-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+          <h2 className="text-xl lg:text-2xl font-bold text-surface-900 dark:text-white">
+            Crop Management
+          </h2>
           <motion.button
             onClick={() => openModal('crop')}
-            className="inline-flex items-center space-x-2 bg-gradient-to-r from-secondary to-secondary-dark text-white px-6 lg:px-8 py-3 lg:py-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+            className="flex items-center space-x-2 bg-gradient-to-r from-secondary to-secondary-dark text-white px-4 lg:px-6 py-2 lg:py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <ApperIcon name="Plus" className="w-5 h-5" />
-            <span>Add Your First Crop</span>
+            <ApperIcon name="Plus" className="w-4 h-4 lg:w-5 lg:h-5" />
+            <span>Add Crop</span>
           </motion.button>
         </div>
-      )}
-    </div>
-  );
 
-  const renderTasks = () => (
-    <div className="space-y-6 lg:space-y-8">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
-        <h2 className="text-xl lg:text-2xl font-bold text-surface-900 dark:text-white">
-          Task Management
-        </h2>
-        <motion.button
-          onClick={() => openModal('task')}
-          className="flex items-center space-x-2 bg-gradient-to-r from-accent to-purple-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <ApperIcon name="Plus" className="w-4 h-4 lg:w-5 lg:h-5" />
-          <span>Add Task</span>
-        </motion.button>
-      </div>
-
-      <div className="space-y-4 lg:space-y-6">
-        {tasks.map((task, index) => (
-          <motion.div
-            key={task.id}
-            className={`bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft transition-all duration-300 ${
-              task.completed ? 'opacity-75' : ''
-            } ${
-              !task.completed && isBefore(task.dueDate, startOfDay(new Date())) 
-                ? 'border-l-4 border-l-red-500' 
-                : ''
-            }`}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-          >
-            <div className="flex items-start space-x-4">
-              <button
-                onClick={() => toggleTaskComplete(task.id)}
-                className={`mt-1 w-5 h-5 lg:w-6 lg:h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
-                  task.completed
-                    ? 'bg-primary border-primary'
-                    : 'border-surface-300 dark:border-surface-600 hover:border-primary'
-                }`}
-              >
-                {task.completed && (
-                  <ApperIcon name="Check" className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
-                )}
-              </button>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+          {filteredCrops.map((crop, index) => (
+            <motion.div
+              key={crop.id}
+              className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft hover:shadow-card transition-all duration-300"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+              whileHover={{ scale: 1.02 }}
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-secondary to-secondary-dark rounded-xl flex items-center justify-center">
+                  <ApperIcon name="Wheat" className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => openModal('crop', crop)}
+                    className="p-2 text-surface-600 hover:text-secondary transition-colors"
+                  >
+                    <ApperIcon name="Edit2" className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => deleteItem('crop', crop.id)}
+                    className="p-2 text-surface-600 hover:text-red-500 transition-colors"
+                  >
+                    <ApperIcon name="Trash2" className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
               
-              <div className="flex-1">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 space-y-2 sm:space-y-0">
-                  <h3 className={`text-lg lg:text-xl font-semibold ${
-                    task.completed 
-                      ? 'text-surface-500 dark:text-surface-500 line-through' 
-                      : 'text-surface-900 dark:text-white'
-                  }`}>
-                    {task.title}
-                  </h3>
-                  <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      task.priority === 'High' ? 'bg-red-100 text-red-700' :
-                      task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-green-100 text-green-700'
+              <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-1">
+                {crop.name}
+              </h3>
+              <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-3">
+                {crop.variety}
+              </p>
+              <p className="text-xs lg:text-sm text-surface-500 dark:text-surface-500 mb-4">
+                {getFarmName(crop.farmId)}
+              </p>
+              
+              <div className="space-y-2 mb-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-surface-600 dark:text-surface-400">Area:</span>
+                  <span className="text-surface-900 dark:text-white font-medium">{crop.area} acres</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-surface-600 dark:text-surface-400">Planted:</span>
+                  <span className="text-surface-900 dark:text-white font-medium">
+                    {format(crop.plantingDate, 'MMM dd, yyyy')}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-surface-600 dark:text-surface-400">Harvest:</span>
+                  <span className="text-surface-900 dark:text-white font-medium">
+                    {format(crop.expectedHarvestDate, 'MMM dd, yyyy')}
+                  </span>
+                </div>
+              </div>
+              
+              <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                crop.status === 'Growing' ? 'bg-green-100 text-green-700' :
+                crop.status === 'Planted' ? 'bg-blue-100 text-blue-700' :
+                crop.status === 'Harvested' ? 'bg-gray-100 text-gray-700' :
+                'bg-yellow-100 text-yellow-700'
+              }`}>
+                {crop.status}
+              </span>
+            </motion.div>
+          ))}
+        </div>
+
+        {filteredCrops.length === 0 && crops.length > 0 && (
+          <div className="text-center py-12 lg:py-16">
+            <ApperIcon name="Search" className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 lg:mb-6 text-surface-400" />
+            <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-2">
+              No crops found
+            </h3>
+            <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-6 lg:mb-8">
+              No crops match your search criteria. Try adjusting your search terms.
+            </p>
+          </div>
+        )}
+
+        {crops.length === 0 && (
+          <div className="text-center py-12 lg:py-16">
+            <ApperIcon name="Wheat" className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 lg:mb-6 text-surface-400" />
+            <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-2">
+              No crops planted
+            </h3>
+            <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-6 lg:mb-8">
+              Add your first crop to start tracking your planting and harvest cycles.
+            </p>
+            <motion.button
+              onClick={() => openModal('crop')}
+              className="inline-flex items-center space-x-2 bg-gradient-to-r from-secondary to-secondary-dark text-white px-6 lg:px-8 py-3 lg:py-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <ApperIcon name="Plus" className="w-5 h-5" />
+              <span>Add Your First Crop</span>
+            </motion.button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+const renderTasks = () => {
+    // Filter tasks based on search query
+    const filteredTasks = tasks.filter(task => {
+      if (!searchQuery.trim()) return true;
+      
+      const query = searchQuery.toLowerCase();
+      return (
+        task.title.toLowerCase().includes(query) ||
+        task.description.toLowerCase().includes(query) ||
+        getFarmName(task.farmId).toLowerCase().includes(query)
+      );
+    });
+
+    return (
+      <div className="space-y-6 lg:space-y-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+          <h2 className="text-xl lg:text-2xl font-bold text-surface-900 dark:text-white">
+            Task Management
+          </h2>
+          <motion.button
+            onClick={() => openModal('task')}
+            className="flex items-center space-x-2 bg-gradient-to-r from-accent to-purple-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <ApperIcon name="Plus" className="w-4 h-4 lg:w-5 lg:h-5" />
+            <span>Add Task</span>
+          </motion.button>
+        </div>
+
+        <div className="space-y-4 lg:space-y-6">
+          {filteredTasks.map((task, index) => (
+            <motion.div
+              key={task.id}
+              className={`bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft transition-all duration-300 ${
+                task.completed ? 'opacity-75' : ''
+              } ${
+                !task.completed && isBefore(task.dueDate, startOfDay(new Date())) 
+                  ? 'border-l-4 border-l-red-500' 
+                  : ''
+              }`}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <div className="flex items-start space-x-4">
+                <button
+                  onClick={() => toggleTaskComplete(task.id)}
+                  className={`mt-1 w-5 h-5 lg:w-6 lg:h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                    task.completed
+                      ? 'bg-primary border-primary'
+                      : 'border-surface-300 dark:border-surface-600 hover:border-primary'
+                  }`}
+                >
+                  {task.completed && (
+                    <ApperIcon name="Check" className="w-3 h-3 lg:w-4 lg:h-4 text-white" />
+                  )}
+                </button>
+                
+                <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 space-y-2 sm:space-y-0">
+                    <h3 className={`text-lg lg:text-xl font-semibold ${
+                      task.completed 
+                        ? 'text-surface-500 dark:text-surface-500 line-through' 
+                        : 'text-surface-900 dark:text-white'
                     }`}>
-                      {task.priority}
-                    </span>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => openModal('task', task)}
-                        className="p-1 text-surface-600 hover:text-accent transition-colors"
-                      >
-                        <ApperIcon name="Edit2" className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => deleteItem('task', task.id)}
-                        className="p-1 text-surface-600 hover:text-red-500 transition-colors"
-                      >
-                        <ApperIcon name="Trash2" className="w-4 h-4" />
-                      </button>
+                      {task.title}
+                    </h3>
+                    <div className="flex items-center space-x-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        task.priority === 'High' ? 'bg-red-100 text-red-700' :
+                        task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-green-100 text-green-700'
+                      }`}>
+                        {task.priority}
+                      </span>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => openModal('task', task)}
+                          className="p-1 text-surface-600 hover:text-accent transition-colors"
+                        >
+                          <ApperIcon name="Edit2" className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => deleteItem('task', task.id)}
+                          className="p-1 text-surface-600 hover:text-red-500 transition-colors"
+                        >
+                          <ApperIcon name="Trash2" className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-3">
-                  {task.description}
-                </p>
-                
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-2 sm:space-y-0 text-sm">
-                  <div className="flex items-center space-x-2">
-                    <ApperIcon name="MapPin" className="w-4 h-4 text-surface-500" />
-                    <span className="text-surface-600 dark:text-surface-400">
-                      {getFarmName(task.farmId)}
-                    </span>
-                  </div>
-                  {task.cropId && (
+                  
+                  <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-3">
+                    {task.description}
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-2 sm:space-y-0 text-sm">
                     <div className="flex items-center space-x-2">
-                      <ApperIcon name="Wheat" className="w-4 h-4 text-surface-500" />
+                      <ApperIcon name="MapPin" className="w-4 h-4 text-surface-500" />
                       <span className="text-surface-600 dark:text-surface-400">
-                        {getCropName(task.cropId)}
+                        {getFarmName(task.farmId)}
                       </span>
                     </div>
-                  )}
-                  <div className="flex items-center space-x-2">
-                    <ApperIcon name="Calendar" className="w-4 h-4 text-surface-500" />
-                    <span className={`${
-                      !task.completed && isBefore(task.dueDate, startOfDay(new Date()))
-                        ? 'text-red-600 font-medium'
-                        : 'text-surface-600 dark:text-surface-400'
-                    }`}>
-                      Due {format(task.dueDate, 'MMM dd, yyyy')}
-                    </span>
+                    {task.cropId && (
+                      <div className="flex items-center space-x-2">
+                        <ApperIcon name="Wheat" className="w-4 h-4 text-surface-500" />
+                        <span className="text-surface-600 dark:text-surface-400">
+                          {getCropName(task.cropId)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center space-x-2">
+                      <ApperIcon name="Calendar" className="w-4 h-4 text-surface-500" />
+                      <span className={`${
+                        !task.completed && isBefore(task.dueDate, startOfDay(new Date()))
+                          ? 'text-red-600 font-medium'
+                          : 'text-surface-600 dark:text-surface-400'
+                      }`}>
+                        Due {format(task.dueDate, 'MMM dd, yyyy')}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {tasks.length === 0 && (
-        <div className="text-center py-12 lg:py-16">
-          <ApperIcon name="Calendar" className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 lg:mb-6 text-surface-400" />
-          <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-2">
-            No tasks scheduled
-          </h3>
-          <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-6 lg:mb-8">
-            Create your first task to start organizing your farm activities.
-          </p>
-          <motion.button
-            onClick={() => openModal('task')}
-            className="inline-flex items-center space-x-2 bg-gradient-to-r from-accent to-purple-600 text-white px-6 lg:px-8 py-3 lg:py-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <ApperIcon name="Plus" className="w-5 h-5" />
-            <span>Add Your First Task</span>
-          </motion.button>
+            </motion.div>
+          ))}
         </div>
-      )}
-    </div>
-  );
 
-  const renderExpenses = () => {
+        {filteredTasks.length === 0 && tasks.length > 0 && (
+          <div className="text-center py-12 lg:py-16">
+            <ApperIcon name="Search" className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 lg:mb-6 text-surface-400" />
+            <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-2">
+              No tasks found
+            </h3>
+            <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-6 lg:mb-8">
+              No tasks match your search criteria. Try adjusting your search terms.
+            </p>
+          </div>
+        )}
+
+        {tasks.length === 0 && (
+          <div className="text-center py-12 lg:py-16">
+            <ApperIcon name="Calendar" className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 lg:mb-6 text-surface-400" />
+            <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-2">
+              No tasks scheduled
+            </h3>
+            <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-6 lg:mb-8">
+              Create your first task to start organizing your farm activities.
+            </p>
+            <motion.button
+              onClick={() => openModal('task')}
+              className="inline-flex items-center space-x-2 bg-gradient-to-r from-accent to-purple-600 text-white px-6 lg:px-8 py-3 lg:py-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <ApperIcon name="Plus" className="w-5 h-5" />
+              <span>Add Your First Task</span>
+            </motion.button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+const renderExpenses = () => {
     const expensesByCategory = getExpensesByCategory();
     const totalExpenses = getTotalExpenses();
+
+    // Filter expenses based on search query
+    const filteredExpenses = expenses.filter(expense => {
+      if (!searchQuery.trim()) return true;
+      
+      const query = searchQuery.toLowerCase();
+      return (
+        expense.description.toLowerCase().includes(query) ||
+        expense.category.toLowerCase().includes(query) ||
+        getFarmName(expense.farmId).toLowerCase().includes(query)
+      );
+    });
 
     return (
       <div className="space-y-6 lg:space-y-8">
@@ -1319,7 +1383,7 @@ const renderFarms = () => {
 
         {/* Expense List */}
         <div className="space-y-4 lg:space-y-6">
-          {expenses.map((expense, index) => (
+          {filteredExpenses.map((expense, index) => (
             <motion.div
               key={expense.id}
               className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft hover:shadow-card transition-all duration-300"
@@ -1386,6 +1450,18 @@ const renderFarms = () => {
             </motion.div>
           ))}
         </div>
+
+        {filteredExpenses.length === 0 && expenses.length > 0 && (
+          <div className="text-center py-12 lg:py-16">
+            <ApperIcon name="Search" className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 lg:mb-6 text-surface-400" />
+            <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-2">
+              No expenses found
+            </h3>
+            <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-6 lg:mb-8">
+              No expenses match your search criteria. Try adjusting your search terms.
+            </p>
+          </div>
+        )}
 
         {expenses.length === 0 && (
           <div className="text-center py-12 lg:py-16">
