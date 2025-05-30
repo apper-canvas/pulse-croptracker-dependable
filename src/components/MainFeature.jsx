@@ -449,6 +449,8 @@ priority: 'High',
         completed: false,
         status: 'In Progress'
       }
+}
+    ];
 
     const sampleExpenses = [
       {
