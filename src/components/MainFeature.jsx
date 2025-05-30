@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import ApperIcon from './ApperIcon';
 import { format, addDays, isAfter, isBefore, startOfDay } from 'date-fns';
 
-const MainFeature = ({ darkMode }) => {
+const MainFeature = ({ darkMode, searchQuery = '' }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [farms, setFarms] = useState([]);
   const [crops, setCrops] = useState([]);
@@ -432,7 +432,8 @@ const MainFeature = ({ darkMode }) => {
     );
   };
 
-// Filter farms based on search query
+const renderFarms = () => {
+    // Filter farms based on search query
     const filteredFarms = farms.filter(farm => {
       if (!searchQuery.trim()) return true;
       
@@ -445,95 +446,101 @@ const MainFeature = ({ darkMode }) => {
     });
 
     return (
-    <div className="space-y-6 lg:space-y-8">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
-        <h2 className="text-xl lg:text-2xl font-bold text-surface-900 dark:text-white">
-          Farm Management
-        </h2>
-        <motion.button
-          onClick={() => openModal('farm')}
-          className="flex items-center space-x-2 bg-gradient-to-r from-primary to-primary-dark text-white px-4 lg:px-6 py-2 lg:py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <ApperIcon name="Plus" className="w-4 h-4 lg:w-5 lg:h-5" />
-          <span>Add Farm</span>
-        </motion.button>
-      </div>
-
-          <motion.div
-            key={farm.id}
-            className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft hover:shadow-card transition-all duration-300"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            whileHover={{ scale: 1.02 }}
+      <div className="space-y-6 lg:space-y-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+          <h2 className="text-xl lg:text-2xl font-bold text-surface-900 dark:text-white">
+            Farm Management
+          </h2>
+          <motion.button
+            onClick={() => openModal('farm')}
+            className="flex items-center space-x-2 bg-gradient-to-r from-primary to-primary-dark text-white px-4 lg:px-6 py-2 lg:py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center">
-                <ApperIcon name="MapPin" className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => openModal('farm', farm)}
-                  className="p-2 text-surface-600 hover:text-primary transition-colors"
-                >
-                  <ApperIcon name="Edit2" className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => deleteItem('farm', farm.id)}
-                  className="p-2 text-surface-600 hover:text-red-500 transition-colors"
-                >
-                  <ApperIcon name="Trash2" className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-            
-            <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-2">
-              {farm.name}
-            </h3>
-            <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-4">
-              {farm.location}
-            </p>
-            
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-surface-600 dark:text-surface-400">Size:</span>
-                <span className="text-surface-900 dark:text-white font-medium">{farm.size} acres</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-surface-600 dark:text-surface-400">Soil Type:</span>
-                <span className="text-surface-900 dark:text-white font-medium">{farm.soilType}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-surface-600 dark:text-surface-400">Created:</span>
-                <span className="text-surface-900 dark:text-white font-medium">
-                  {format(farm.createdAt, 'MMM yyyy')}
-                </span>
-              </div>
-            </div>
-            
-            <div className="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
-              <div className="flex justify-between text-sm">
-                <span className="text-surface-600 dark:text-surface-400">Active Crops:</span>
-                <span className="text-primary font-medium">
-                  {crops.filter(crop => crop.farmId === farm.id).length}
-                </span>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-<div className="text-center py-12 lg:py-16">
-          <ApperIcon name="Search" className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 lg:mb-6 text-surface-400" />
-          <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-2">
-            No farms found
-          </h3>
-          <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-6 lg:mb-8">
-            No farms match your search criteria. Try adjusting your search terms.
-          </p>
+            <ApperIcon name="Plus" className="w-4 h-4 lg:w-5 lg:h-5" />
+            <span>Add Farm</span>
+          </motion.button>
         </div>
-      )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+          {filteredFarms.map((farm, index) => (
+            <motion.div
+              key={farm.id}
+              className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft hover:shadow-card transition-all duration-300"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+              whileHover={{ scale: 1.02 }}
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center">
+                  <ApperIcon name="MapPin" className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
+                </div>
+<div className="flex space-x-2">
+                  <button
+                    onClick={() => openModal('farm', farm)}
+                    className="p-2 text-surface-600 hover:text-primary transition-colors"
+                  >
+                    <ApperIcon name="Edit2" className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => deleteItem('farm', farm.id)}
+                    className="p-2 text-surface-600 hover:text-red-500 transition-colors"
+                  >
+                    <ApperIcon name="Trash2" className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              
+              <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-2">
+                {farm.name}
+              </h3>
+              <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-4">
+                {farm.location}
+              </p>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-surface-600 dark:text-surface-400">Size:</span>
+                  <span className="text-surface-900 dark:text-white font-medium">{farm.size} acres</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-surface-600 dark:text-surface-400">Soil Type:</span>
+                  <span className="text-surface-900 dark:text-white font-medium">{farm.soilType}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-surface-600 dark:text-surface-400">Created:</span>
+                  <span className="text-surface-900 dark:text-white font-medium">
+                    {format(farm.createdAt, 'MMM yyyy')}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
+                <div className="flex justify-between text-sm">
+                  <span className="text-surface-600 dark:text-surface-400">Active Crops:</span>
+                  <span className="text-primary font-medium">
+                    {crops.filter(crop => crop.farmId === farm.id).length}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {filteredFarms.length === 0 && farms.length > 0 && (
+          <div className="text-center py-12 lg:py-16">
+            <ApperIcon name="Search" className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 lg:mb-6 text-surface-400" />
+            <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-2">
+              No farms found
+            </h3>
+            <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-6 lg:mb-8">
+              No farms match your search criteria. Try adjusting your search terms.
+            </p>
+          </div>
+        )}
+
+        {farms.length === 0 && (
 
       {farms.length === 0 && (
       {farms.length === 0 && (
