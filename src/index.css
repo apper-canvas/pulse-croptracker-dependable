@@ -49,6 +49,55 @@
     background-color: rgba(34, 197, 94, 0.1) !important;
     transform: scale(1.02);
   }
+/* Weather-specific styles */
+  .weather-card {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+  }
+
+  .weather-sunny {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+  }
+
+  .weather-cloudy {
+    background: linear-gradient(135deg, rgba(156, 163, 175, 0.1) 0%, rgba(107, 114, 128, 0.05) 100%);
+    border: 1px solid rgba(156, 163, 175, 0.2);
+  }
+
+  .weather-rainy {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+
+  .weather-loading {
+    background: linear-gradient(90deg, rgba(156, 163, 175, 0.1) 25%, rgba(156, 163, 175, 0.3) 50%, rgba(156, 163, 175, 0.1) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .temperature-display {
+    background: linear-gradient(45deg, #f59e0b, #d97706);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+  }
+
+  .weather-icon-bounce {
+    animation: weather-bounce 2s infinite;
+  }
+
+  @keyframes weather-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
 }
 
 @layer utilities {

@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import ApperIcon from './ApperIcon';
 import { format, addDays, isAfter, isBefore, startOfDay } from 'date-fns';
 import Chart from 'react-apexcharts';
+import axios from 'axios';
 
 // ImageUpload Component
 const ImageUpload = ({ images = [], onChange, label = "Upload Images" }) => {
@@ -150,6 +151,134 @@ const ImageUpload = ({ images = [], onChange, label = "Upload Images" }) => {
     </div>
   );
 };
+// Weather Service Component
+const WeatherService = {
+  API_KEY: import.meta.env.VITE_WEATHER_API_KEY || 'demo_key',
+  BASE_URL: 'https://api.openweathermap.org/data/2.5',
+
+  // Location mapping for farm regions
+  LOCATION_COORDS: {
+    california: { lat: 36.7783, lon: -119.4179, name: 'California Central Valley' },
+    iowa: { lat: 42.0046, lon: -93.214, name: 'Iowa Corn Belt' },
+    kansas: { lat: 38.2904, lon: -98.4842, name: 'Kansas Wheat Belt' },
+    texas: { lat: 35.2, lon: -101.8313, name: 'Texas Panhandle' },
+    nebraska: { lat: 41.5868, lon: -99.9014, name: 'Nebraska Plains' }
+  },
+
+  async fetchCurrentWeather(location) {
+    try {
+      const coords = this.LOCATION_COORDS[location];
+      if (!coords) throw new Error('Invalid location');
+
+      const response = await axios.get(`${this.BASE_URL}/weather`, {
+        params: {
+          lat: coords.lat,
+          lon: coords.lon,
+          appid: this.API_KEY,
+          units: 'imperial'
+        }
+      });
+
+      return {
+        temperature: Math.round(response.data.main.temp),
+        condition: response.data.weather[0].main,
+        description: response.data.weather[0].description,
+        humidity: response.data.main.humidity,
+        windSpeed: Math.round(response.data.wind.speed),
+        icon: this.mapWeatherIcon(response.data.weather[0].main)
+      };
+    } catch (error) {
+      console.warn('Weather API error:', error.message);
+      return this.getFallbackWeather(location);
+    }
+  },
+
+  async fetchWeatherForecast(location) {
+    try {
+      const coords = this.LOCATION_COORDS[location];
+      if (!coords) throw new Error('Invalid location');
+
+      const response = await axios.get(`${this.BASE_URL}/forecast`, {
+        params: {
+          lat: coords.lat,
+          lon: coords.lon,
+          appid: this.API_KEY,
+          units: 'imperial'
+        }
+      });
+
+      // Process 5-day forecast (take one reading per day at noon)
+      const dailyForecasts = [];
+      const processedDates = new Set();
+
+      response.data.list.forEach(item => {
+        const date = new Date(item.dt * 1000);
+        const dateStr = format(date, 'yyyy-MM-dd');
+        
+        if (!processedDates.has(dateStr) && dailyForecasts.length < 5) {
+          processedDates.add(dateStr);
+          dailyForecasts.push({
+            day: dailyForecasts.length === 0 ? 'Today' : 
+                 dailyForecasts.length === 1 ? 'Tomorrow' : 
+                 format(date, 'EEE'),
+            high: Math.round(item.main.temp_max),
+            low: Math.round(item.main.temp_min),
+            condition: item.weather[0].main,
+            icon: this.mapWeatherIcon(item.weather[0].main)
+          });
+        }
+      });
+
+      return dailyForecasts;
+    } catch (error) {
+      console.warn('Weather forecast API error:', error.message);
+      return this.getFallbackForecast(location);
+    }
+  },
+
+  mapWeatherIcon(condition) {
+    const iconMap = {
+      'Clear': 'Sun',
+      'Clouds': 'Cloud',
+      'Rain': 'CloudRain',
+      'Drizzle': 'CloudRain',
+      'Thunderstorm': 'CloudRain',
+      'Snow': 'Cloud',
+      'Mist': 'Cloud',
+      'Fog': 'Cloud',
+      'Haze': 'Cloud',
+      'Sunny': 'Sun',
+      'Partly Cloudy': 'Cloud',
+      'Cloudy': 'Cloud'
+    };
+    return iconMap[condition] || 'Cloud';
+  },
+
+  getFallbackWeather(location) {
+    // Fallback static data when API is unavailable
+    const fallbackData = {
+      california: { temperature: 72, condition: 'Sunny', humidity: 45, windSpeed: 8, icon: 'Sun' },
+      iowa: { temperature: 65, condition: 'Partly Cloudy', humidity: 60, windSpeed: 12, icon: 'Cloud' },
+      kansas: { temperature: 70, condition: 'Clear', humidity: 35, windSpeed: 15, icon: 'Sun' },
+      texas: { temperature: 78, condition: 'Hot', humidity: 40, windSpeed: 10, icon: 'Sun' },
+      nebraska: { temperature: 63, condition: 'Breezy', humidity: 55, windSpeed: 18, icon: 'Cloud' }
+    };
+    return fallbackData[location] || fallbackData.california;
+  },
+
+  getFallbackForecast(location) {
+    // Fallback static forecast when API is unavailable
+    const baseForecast = [
+      { day: 'Today', high: 75, low: 55, condition: 'Sunny', icon: 'Sun' },
+      { day: 'Tomorrow', high: 78, low: 58, condition: 'Partly Cloudy', icon: 'Cloud' },
+      { day: format(addDays(new Date(), 2), 'EEE'), high: 76, low: 60, condition: 'Cloudy', icon: 'Cloud' },
+      { day: format(addDays(new Date(), 3), 'EEE'), high: 73, low: 57, condition: 'Light Rain', icon: 'CloudRain' },
+      { day: format(addDays(new Date(), 4), 'EEE'), high: 71, low: 54, condition: 'Sunny', icon: 'Sun' }
+    ];
+    return baseForecast;
+  }
+};
+
 const MainFeature = ({ darkMode, searchQuery = '' }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [farms, setFarms] = useState([]);
@@ -159,97 +288,89 @@ const MainFeature = ({ darkMode, searchQuery = '' }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
   const [editingItem, setEditingItem] = useState(null);
-const [selectedLocation, setSelectedLocation] = useState('california');
+  const [selectedLocation, setSelectedLocation] = useState('california');
   
-  // Weather data for different locations
-  const weatherData = {
-    california: {
-      location: 'California Central Valley',
-      current: {
-        temperature: 72,
-        condition: 'Sunny',
-        humidity: 45,
-        windSpeed: 8,
-        icon: 'Sun'
-      },
-      forecast: [
-        { day: 'Today', high: 75, low: 55, condition: 'Sunny', icon: 'Sun' },
-        { day: 'Tomorrow', high: 78, low: 58, condition: 'Partly Cloudy', icon: 'Cloud' },
-        { day: format(addDays(new Date(), 2), 'EEE'), high: 76, low: 60, condition: 'Cloudy', icon: 'Cloud' },
-        { day: format(addDays(new Date(), 3), 'EEE'), high: 73, low: 57, condition: 'Light Rain', icon: 'CloudRain' },
-        { day: format(addDays(new Date(), 4), 'EEE'), high: 71, low: 54, condition: 'Sunny', icon: 'Sun' }
-      ]
-    },
-    iowa: {
-      location: 'Iowa Corn Belt',
-      current: {
-        temperature: 65,
-        condition: 'Partly Cloudy',
-        humidity: 60,
-        windSpeed: 12,
-        icon: 'Cloud'
-      },
-      forecast: [
-        { day: 'Today', high: 68, low: 48, condition: 'Partly Cloudy', icon: 'Cloud' },
-        { day: 'Tomorrow', high: 71, low: 52, condition: 'Sunny', icon: 'Sun' },
-        { day: format(addDays(new Date(), 2), 'EEE'), high: 74, low: 55, condition: 'Thunderstorms', icon: 'CloudRain' },
-        { day: format(addDays(new Date(), 3), 'EEE'), high: 69, low: 51, condition: 'Cloudy', icon: 'Cloud' },
-        { day: format(addDays(new Date(), 4), 'EEE'), high: 72, low: 54, condition: 'Sunny', icon: 'Sun' }
-      ]
-    },
-    kansas: {
-      location: 'Kansas Wheat Belt',
-      current: {
-        temperature: 70,
-        condition: 'Clear',
-        humidity: 35,
-        windSpeed: 15,
-        icon: 'Sun'
-      },
-      forecast: [
-        { day: 'Today', high: 74, low: 52, condition: 'Clear', icon: 'Sun' },
-        { day: 'Tomorrow', high: 77, low: 55, condition: 'Sunny', icon: 'Sun' },
-        { day: format(addDays(new Date(), 2), 'EEE'), high: 79, low: 58, condition: 'Partly Cloudy', icon: 'Cloud' },
-        { day: format(addDays(new Date(), 3), 'EEE'), high: 75, low: 54, condition: 'Windy', icon: 'Cloud' },
-        { day: format(addDays(new Date(), 4), 'EEE'), high: 73, low: 51, condition: 'Clear', icon: 'Sun' }
-      ]
-    },
-    texas: {
-      location: 'Texas Panhandle',
-      current: {
-        temperature: 78,
-        condition: 'Hot',
-        humidity: 40,
-        windSpeed: 10,
-        icon: 'Sun'
-      },
-      forecast: [
-        { day: 'Today', high: 82, low: 62, condition: 'Hot', icon: 'Sun' },
-        { day: 'Tomorrow', high: 85, low: 65, condition: 'Sunny', icon: 'Sun' },
-        { day: format(addDays(new Date(), 2), 'EEE'), high: 83, low: 63, condition: 'Partly Cloudy', icon: 'Cloud' },
-        { day: format(addDays(new Date(), 3), 'EEE'), high: 81, low: 61, condition: 'Thunderstorms', icon: 'CloudRain' },
-        { day: format(addDays(new Date(), 4), 'EEE'), high: 79, low: 59, condition: 'Cloudy', icon: 'Cloud' }
-      ]
-    },
-    nebraska: {
-      location: 'Nebraska Plains',
-      current: {
-        temperature: 63,
-        condition: 'Breezy',
-        humidity: 55,
-        windSpeed: 18,
-        icon: 'Cloud'
-      },
-      forecast: [
-        { day: 'Today', high: 67, low: 45, condition: 'Breezy', icon: 'Cloud' },
-        { day: 'Tomorrow', high: 70, low: 48, condition: 'Partly Cloudy', icon: 'Cloud' },
-        { day: format(addDays(new Date(), 2), 'EEE'), high: 72, low: 51, condition: 'Sunny', icon: 'Sun' },
-        { day: format(addDays(new Date(), 3), 'EEE'), high: 69, low: 49, condition: 'Light Rain', icon: 'CloudRain' },
-        { day: format(addDays(new Date(), 4), 'EEE'), high: 66, low: 46, condition: 'Cloudy', icon: 'Cloud' }
-      ]
+  // Weather state management
+  const [weatherData, setWeatherData] = useState({});
+  const [weatherLoading, setWeatherLoading] = useState(true);
+  const [weatherError, setWeatherError] = useState(null);
+  const [lastWeatherUpdate, setLastWeatherUpdate] = useState(null);
+
+  // Location data for weather service
+  const locationOptions = {
+    california: 'California Central Valley',
+    iowa: 'Iowa Corn Belt', 
+    kansas: 'Kansas Wheat Belt',
+    texas: 'Texas Panhandle',
+    nebraska: 'Nebraska Plains'
+  };
+
+  // Fetch weather data
+  const fetchWeatherData = async (location) => {
+    try {
+      setWeatherLoading(true);
+      setWeatherError(null);
+
+      const [currentWeather, forecast] = await Promise.all([
+        WeatherService.fetchCurrentWeather(location),
+        WeatherService.fetchWeatherForecast(location)
+      ]);
+
+      setWeatherData(prev => ({
+        ...prev,
+        [location]: {
+          location: locationOptions[location],
+          current: currentWeather,
+          forecast: forecast
+        }
+      }));
+
+      setLastWeatherUpdate(new Date());
+      toast.success('Weather data updated successfully!');
+    } catch (error) {
+      console.error('Weather fetch error:', error);
+      setWeatherError('Failed to fetch weather data');
+      toast.error('Failed to update weather data. Using cached information.');
+    } finally {
+      setWeatherLoading(false);
     }
   };
 
+  // Initialize weather data and set up auto-refresh
+  useEffect(() => {
+    // Fetch initial weather data for all locations
+    const initializeWeather = async () => {
+      const locations = Object.keys(locationOptions);
+      for (const location of locations) {
+        await fetchWeatherData(location);
+      }
+    };
+
+    initializeWeather();
+
+    // Set up auto-refresh every 30 minutes
+    const weatherInterval = setInterval(() => {
+      if (!weatherLoading) {
+        fetchWeatherData(selectedLocation);
+      }
+    }, 30 * 60 * 1000); // 30 minutes
+
+    return () => clearInterval(weatherInterval);
+  }, []);
+
+  // Refresh weather when location changes
+  useEffect(() => {
+    if (selectedLocation && (!weatherData[selectedLocation] || 
+        (lastWeatherUpdate && Date.now() - lastWeatherUpdate.getTime() > 30 * 60 * 1000))) {
+      fetchWeatherData(selectedLocation);
+    }
+  }, [selectedLocation]);
+
+  const currentWeather = weatherData[selectedLocation] || {
+    location: locationOptions[selectedLocation],
+    current: { temperature: '--', condition: 'Loading...', humidity: '--', windSpeed: '--', icon: 'Cloud' },
+    forecast: []
+  };
   const currentWeather = weatherData[selectedLocation];
 // Sample revenue data for charts
   const sampleRevenue = [
@@ -1068,25 +1189,71 @@ const renderReports = () => {
             </div>
           </div>
         </div>
-{/* Weather Widget */}
-        <div className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft">
+{/* Real-time Weather Widget */}
+        <div className={`rounded-2xl p-4 lg:p-6 border shadow-soft transition-all duration-300 ${
+          weatherLoading 
+            ? 'weather-loading' 
+            : currentWeather.current.condition === 'Sunny' || currentWeather.current.condition === 'Clear'
+              ? 'weather-sunny'
+              : currentWeather.current.condition?.includes('Rain') || currentWeather.current.condition?.includes('Storm')
+                ? 'weather-rainy'
+                : currentWeather.current.condition?.includes('Cloud')
+                  ? 'weather-cloudy'
+                  : 'weather-card'
+        }`}>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 lg:mb-6 space-y-2 sm:space-y-0">
-            <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white flex items-center">
-              <ApperIcon name={currentWeather.current.icon} className="w-5 h-5 lg:w-6 lg:h-6 mr-2 text-secondary" />
-              Weather Forecast
-            </h3>
-            <select
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
-              className="px-3 py-1 lg:px-4 lg:py-2 text-sm lg:text-base bg-surface-50 dark:bg-surface-700 border border-surface-200 dark:border-surface-600 rounded-lg text-surface-900 dark:text-white focus:ring-2 focus:ring-secondary focus:border-transparent transition-all duration-300"
-            >
-              <option value="california">California Central Valley</option>
-              <option value="iowa">Iowa Corn Belt</option>
-              <option value="kansas">Kansas Wheat Belt</option>
-              <option value="texas">Texas Panhandle</option>
-              <option value="nebraska">Nebraska Plains</option>
-            </select>
+            <div className="flex items-center space-x-3">
+              <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white flex items-center">
+                <ApperIcon 
+                  name={currentWeather.current.icon} 
+                  className={`w-5 h-5 lg:w-6 lg:h-6 mr-2 text-secondary ${!weatherLoading ? 'weather-icon-bounce' : ''}`} 
+                />
+                Weather Forecast
+              </h3>
+              {weatherLoading && (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-secondary rounded-full animate-pulse"></div>
+                  <span className="text-xs text-surface-500">Updating...</span>
+                </div>
+              )}
+              {lastWeatherUpdate && !weatherLoading && (
+                <span className="text-xs text-surface-500 dark:text-surface-400">
+                  Updated {format(lastWeatherUpdate, 'HH:mm')}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center space-x-3">
+              <select
+                value={selectedLocation}
+                onChange={(e) => setSelectedLocation(e.target.value)}
+                className="px-3 py-1 lg:px-4 lg:py-2 text-sm lg:text-base bg-surface-50 dark:bg-surface-700 border border-surface-200 dark:border-surface-600 rounded-lg text-surface-900 dark:text-white focus:ring-2 focus:ring-secondary focus:border-transparent transition-all duration-300"
+              >
+                {Object.entries(locationOptions).map(([key, label]) => (
+                  <option key={key} value={key}>{label}</option>
+                ))}
+              </select>
+              <motion.button
+                onClick={() => fetchWeatherData(selectedLocation)}
+                disabled={weatherLoading}
+                className="p-2 rounded-lg bg-secondary/10 hover:bg-secondary/20 text-secondary transition-all duration-300 disabled:opacity-50"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <ApperIcon 
+                  name="RefreshCw" 
+                  className={`w-4 h-4 ${weatherLoading ? 'animate-spin' : ''}`} 
+                />
+              </motion.button>
+            </div>
           </div>
+
+          {weatherError && (
+            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-sm text-red-700 dark:text-red-400">
+                {weatherError} - Showing cached data
+              </p>
+            </div>
+          )}
 
           {/* Current Weather */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
@@ -1103,17 +1270,17 @@ const renderReports = () => {
                 </div>
               </div>
             </div>
-            <div className="text-center">
-              <div className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white">
-                {currentWeather.current.humidity}%
+<div className="text-center">
+              <div className={`text-lg lg:text-xl font-semibold ${weatherLoading ? 'animate-pulse' : ''} text-surface-900 dark:text-white`}>
+                {typeof currentWeather.current.humidity === 'number' ? `${currentWeather.current.humidity}%` : currentWeather.current.humidity}
               </div>
               <div className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
                 Humidity
               </div>
             </div>
             <div className="text-center">
-              <div className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white">
-                {currentWeather.current.windSpeed} mph
+              <div className={`text-lg lg:text-xl font-semibold ${weatherLoading ? 'animate-pulse' : ''} text-surface-900 dark:text-white`}>
+                {typeof currentWeather.current.windSpeed === 'number' ? `${currentWeather.current.windSpeed} mph` : currentWeather.current.windSpeed}
               </div>
               <div className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
                 Wind Speed
@@ -1121,7 +1288,7 @@ const renderReports = () => {
             </div>
             <div className="text-center">
               <div className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white">
-                {currentWeather.location.split(' ').slice(-2).join(' ')}
+                {currentWeather.location ? currentWeather.location.split(' ').slice(-2).join(' ') : 'Unknown'}
               </div>
               <div className="text-xs lg:text-sm text-surface-600 dark:text-surface-400">
                 Region
@@ -1129,30 +1296,66 @@ const renderReports = () => {
             </div>
           </div>
 
+          {/* Weather Alerts/Recommendations */}
+          {!weatherLoading && currentWeather.current.temperature && (
+            <div className="mb-6">
+              <div className="flex flex-wrap gap-2">
+                {currentWeather.current.temperature > 85 && (
+                  <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                    High Heat - Increase Irrigation
+                  </span>
+                )}
+                {currentWeather.current.condition?.includes('Rain') && (
+                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                    Rain Expected - Postpone Spraying
+                  </span>
+                )}
+                {currentWeather.current.windSpeed > 15 && (
+                  <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+                    High Winds - Avoid Chemical Applications
+                  </span>
+                )}
+                {currentWeather.current.humidity < 30 && (
+                  <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
+                    Low Humidity - Monitor Soil Moisture
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+          </div>
+
           {/* 5-Day Forecast */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4">
-            {currentWeather.forecast.map((day, index) => (
+{(currentWeather.forecast && currentWeather.forecast.length > 0 ? currentWeather.forecast : Array(5).fill(null)).map((day, index) => (
               <motion.div
                 key={index}
-                className="bg-surface-50 dark:bg-surface-700 rounded-xl p-3 lg:p-4 text-center"
+                className={`rounded-xl p-3 lg:p-4 text-center transition-all duration-300 ${
+                  weatherLoading || !day 
+                    ? 'bg-surface-100 dark:bg-surface-700 animate-pulse' 
+                    : 'bg-surface-50 dark:bg-surface-700 hover:bg-surface-100 dark:hover:bg-surface-600'
+                }`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
+                whileHover={!weatherLoading && day ? { scale: 1.02 } : {}}
               >
                 <div className="text-xs lg:text-sm font-medium text-surface-600 dark:text-surface-400 mb-2">
-                  {day.day}
+                  {day?.day || (index === 0 ? 'Today' : index === 1 ? 'Tomorrow' : `Day ${index + 1}`)}
                 </div>
                 <div className="w-6 h-6 lg:w-8 lg:h-8 mx-auto mb-2">
-                  <ApperIcon name={day.icon} className="w-full h-full text-secondary" />
+                  <ApperIcon 
+                    name={day?.icon || 'Cloud'} 
+                    className={`w-full h-full text-secondary ${!weatherLoading && day ? 'weather-icon-bounce' : ''}`} 
+                  />
                 </div>
                 <div className="text-sm lg:text-base font-semibold text-surface-900 dark:text-white mb-1">
-                  {day.high}°
+                  {day?.high ? `${day.high}°` : '--°'}
                 </div>
                 <div className="text-xs lg:text-sm text-surface-500 dark:text-surface-500 mb-2">
-                  {day.low}°
+                  {day?.low ? `${day.low}°` : '--°'}
                 </div>
                 <div className="text-xs text-surface-600 dark:text-surface-400">
-                  {day.condition}
+                  {day?.condition || 'Loading...'}
                 </div>
               </motion.div>
             ))}
