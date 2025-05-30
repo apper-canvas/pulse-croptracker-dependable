@@ -910,9 +910,7 @@ const task = tasks.find(t => t.id === taskId);
       }
     }
 };
-
-  const deleteItem = (type, id) => {
-  const deleteItem = (type, id) => {
+const deleteItem = (type, id) => {
     switch (type) {
       case 'farm':
         setFarms(farms.filter(f => f.id !== id));
