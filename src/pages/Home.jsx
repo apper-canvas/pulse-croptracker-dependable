@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 
 const Home = ({ darkMode, setDarkMode }) => {
   const [searchQuery, setSearchQuery] = useState('');
+const [activeTab, setActiveTab] = useState('overview');
 
   const handleSearchChange = (query) => {
     setSearchQuery(query);
@@ -76,17 +77,18 @@ const Home = ({ darkMode, setDarkMode }) => {
       <nav className="bg-white/60 dark:bg-surface-800/60 backdrop-blur-sm border-b border-green-200/30 dark:border-surface-700/30 sticky top-16 lg:top-20 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-1 sm:space-x-2 lg:space-x-4 py-2 lg:py-3 overflow-x-auto scrollbar-hide">
-            {[
-              { icon: 'LayoutDashboard', label: 'Dashboard', active: true },
-              { icon: 'MapPin', label: 'Farms' },
-              { icon: 'Wheat', label: 'Crops' },
-              { icon: 'Calendar', label: 'Tasks' },
-              { icon: 'DollarSign', label: 'Expenses' },
+{[
+              { icon: 'LayoutDashboard', label: 'Dashboard', key: 'overview' },
+              { icon: 'MapPin', label: 'Farms', key: 'farms' },
+              { icon: 'Wheat', label: 'Crops', key: 'crops' },
+              { icon: 'Calendar', label: 'Tasks', key: 'tasks' },
+              { icon: 'DollarSign', label: 'Expenses', key: 'expenses' },
             ].map((tab, index) => (
               <motion.button
                 key={tab.label}
+                onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center space-x-2 px-3 lg:px-4 py-2 lg:py-3 rounded-xl whitespace-nowrap transition-all duration-300 ${
-                  tab.active
+                  activeTab === tab.key
                     ? 'bg-primary text-white shadow-lg'
                     : 'bg-surface-100/80 dark:bg-surface-700/80 text-surface-700 dark:text-surface-300 hover:bg-surface-200/80 dark:hover:bg-surface-600/80'
                 }`}
@@ -106,7 +108,7 @@ const Home = ({ darkMode, setDarkMode }) => {
 
       {/* Main Content */}
       <main className="flex-1">
-        <MainFeature darkMode={darkMode} />
+<MainFeature darkMode={darkMode} searchQuery={searchQuery} activeTab={activeTab} setActiveTab={setActiveTab} />
       </main>
 
       {/* Footer */}
