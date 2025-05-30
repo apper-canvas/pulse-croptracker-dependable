@@ -432,7 +432,19 @@ const MainFeature = ({ darkMode }) => {
     );
   };
 
-  const renderFarms = () => (
+// Filter farms based on search query
+    const filteredFarms = farms.filter(farm => {
+      if (!searchQuery.trim()) return true;
+      
+      const query = searchQuery.toLowerCase();
+      return (
+        farm.name.toLowerCase().includes(query) ||
+        farm.location.toLowerCase().includes(query) ||
+        farm.soilType.toLowerCase().includes(query)
+      );
+    });
+
+    return (
     <div className="space-y-6 lg:space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
         <h2 className="text-xl lg:text-2xl font-bold text-surface-900 dark:text-white">
@@ -449,8 +461,6 @@ const MainFeature = ({ darkMode }) => {
         </motion.button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
-        {farms.map((farm, index) => (
           <motion.div
             key={farm.id}
             className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft hover:shadow-card transition-all duration-300"
@@ -514,7 +524,18 @@ const MainFeature = ({ darkMode }) => {
           </motion.div>
         ))}
       </div>
+<div className="text-center py-12 lg:py-16">
+          <ApperIcon name="Search" className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 lg:mb-6 text-surface-400" />
+          <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-2">
+            No farms found
+          </h3>
+          <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-6 lg:mb-8">
+            No farms match your search criteria. Try adjusting your search terms.
+          </p>
+        </div>
+      )}
 
+      {farms.length === 0 && (
       {farms.length === 0 && (
         <div className="text-center py-12 lg:py-16">
           <ApperIcon name="MapPin" className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 lg:mb-6 text-surface-400" />
@@ -536,7 +557,6 @@ const MainFeature = ({ darkMode }) => {
         </div>
       )}
     </div>
-  );
 
   const renderCrops = () => (
     <div className="space-y-6 lg:space-y-8">
