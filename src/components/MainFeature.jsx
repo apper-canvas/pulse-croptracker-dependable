@@ -326,11 +326,9 @@ const MainFeature = ({ darkMode, searchQuery = '' }) => {
       }));
 
       setLastWeatherUpdate(new Date());
-      toast.success('Weather data updated successfully!');
     } catch (error) {
       console.error('Weather fetch error:', error);
       setWeatherError('Failed to fetch weather data');
-      toast.error('Failed to update weather data. Using cached information.');
     } finally {
       setWeatherLoading(false);
     }
