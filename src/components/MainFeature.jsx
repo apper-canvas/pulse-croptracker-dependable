@@ -540,31 +540,29 @@ const renderFarms = () => {
           </div>
         )}
 
-        {farms.length === 0 && (
-
-      {farms.length === 0 && (
-      {farms.length === 0 && (
-        <div className="text-center py-12 lg:py-16">
-          <ApperIcon name="MapPin" className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 lg:mb-6 text-surface-400" />
-          <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-2">
-            No farms yet
-          </h3>
-          <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-6 lg:mb-8">
-            Start by adding your first farm to begin tracking your agricultural operations.
-          </p>
-          <motion.button
-            onClick={() => openModal('farm')}
-            className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary to-primary-dark text-white px-6 lg:px-8 py-3 lg:py-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <ApperIcon name="Plus" className="w-5 h-5" />
-            <span>Add Your First Farm</span>
-          </motion.button>
-        </div>
-      )}
-    </div>
-
+{farms.length === 0 && (
+          <div className="text-center py-12 lg:py-16">
+            <ApperIcon name="MapPin" className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 lg:mb-6 text-surface-400" />
+            <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-2">
+              No farms yet
+            </h3>
+            <p className="text-sm lg:text-base text-surface-600 dark:text-surface-400 mb-6 lg:mb-8">
+              Start by adding your first farm to begin tracking your agricultural operations.
+            </p>
+            <motion.button
+              onClick={() => openModal('farm')}
+              className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary to-primary-dark text-white px-6 lg:px-8 py-3 lg:py-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <ApperIcon name="Plus" className="w-5 h-5" />
+              <span>Add Your First Farm</span>
+            </motion.button>
+          </div>
+        )}
+      </div>
+    );
+};
   const renderCrops = () => (
     <div className="space-y-6 lg:space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
