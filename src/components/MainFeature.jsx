@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import ApperIcon from './ApperIcon';
 import { format, addDays, isAfter, isBefore, startOfDay } from 'date-fns';
+import Chart from 'react-apexcharts';
 
 const MainFeature = ({ darkMode, searchQuery = '' }) => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -197,6 +198,69 @@ const [selectedLocation, setSelectedLocation] = useState('california');
     setCrops(sampleCrops);
     setTasks(sampleTasks);
     setExpenses(sampleExpenses);
+// Sample revenue data for charts
+  const sampleRevenue = [
+    { farmId: '1', amount: 3500.00, source: 'Crop Sales', date: new Date('2024-01-25') },
+    { farmId: '1', amount: 2800.00, source: 'Crop Sales', date: new Date('2024-02-15') },
+    { farmId: '2', amount: 4200.00, source: 'Crop Sales', date: new Date('2024-02-20') },
+    { farmId: '1', amount: 3100.00, source: 'Crop Sales', date: new Date('2024-03-10') },
+    { farmId: '2', amount: 3800.00, source: 'Crop Sales', date: new Date('2024-03-15') },
+    { farmId: '1', amount: 4500.00, source: 'Crop Sales', date: new Date('2024-04-05') },
+  ];
+
+  // Chart data processing functions
+  const getMonthlyExpensesData = () => {
+    const monthlyData = {};
+    expenses.forEach(expense => {
+      const month = format(expense.date, 'MMM yyyy');
+      if (!monthlyData[month]) {
+        monthlyData[month] = {};
+      }
+      monthlyData[month][expense.category] = (monthlyData[month][expense.category] || 0) + expense.amount;
+    });
+    
+    const categories = [...new Set(expenses.map(e => e.category))];
+    const months = Object.keys(monthlyData).sort();
+    
+    return {
+      categories: months,
+      series: categories.map(category => ({
+        name: category,
+        data: months.map(month => monthlyData[month][category] || 0)
+      }))
+    };
+  };
+
+  const getRevenueVsExpensesData = () => {
+    const monthlyRevenue = {};
+    const monthlyExpenses = {};
+    
+    sampleRevenue.forEach(revenue => {
+      const month = format(revenue.date, 'MMM yyyy');
+      monthlyRevenue[month] = (monthlyRevenue[month] || 0) + revenue.amount;
+    });
+    
+    expenses.forEach(expense => {
+      const month = format(expense.date, 'MMM yyyy');
+      monthlyExpenses[month] = (monthlyExpenses[month] || 0) + expense.amount;
+    });
+    
+    const allMonths = [...new Set([...Object.keys(monthlyRevenue), ...Object.keys(monthlyExpenses)])].sort();
+    
+    return {
+      categories: allMonths,
+      series: [
+        {
+          name: 'Revenue',
+          data: allMonths.map(month => monthlyRevenue[month] || 0)
+        },
+        {
+          name: 'Expenses',
+          data: allMonths.map(month => monthlyExpenses[month] || 0)
+        }
+      ]
+    };
+  };
   }, []);
 
   const openModal = (type, item = null) => {
@@ -360,6 +424,239 @@ const [selectedLocation, setSelectedLocation] = useState('california');
       categoryTotals[expense.category] = (categoryTotals[expense.category] || 0) + expense.amount;
     });
     return categoryTotals;
+  };
+// Chart rendering functions
+  const renderExpenseChart = () => {
+    const expenseData = getMonthlyExpensesData();
+    
+    const chartOptions = {
+      chart: {
+        type: 'bar',
+        height: 300,
+        toolbar: { show: false },
+        background: 'transparent'
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: '60%',
+          borderRadius: 8
+        }
+      },
+      dataLabels: { enabled: false },
+      stroke: { show: true, width: 2, colors: ['transparent'] },
+      xaxis: {
+        categories: expenseData.categories,
+        labels: { style: { colors: darkMode ? '#9CA3AF' : '#6B7280' } }
+      },
+      yaxis: {
+        title: { text: 'Amount ($)', style: { color: darkMode ? '#9CA3AF' : '#6B7280' } },
+        labels: { 
+          style: { colors: darkMode ? '#9CA3AF' : '#6B7280' },
+          formatter: (value) => `$${value.toLocaleString()}`
+        }
+      },
+      fill: { opacity: 1 },
+      tooltip: {
+        theme: darkMode ? 'dark' : 'light',
+        y: { formatter: (val) => `$${val.toLocaleString()}` }
+      },
+      legend: {
+        labels: { colors: darkMode ? '#9CA3AF' : '#6B7280' }
+      },
+      colors: ['#22c55e', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'],
+      grid: {
+        borderColor: darkMode ? '#374151' : '#e5e7eb',
+        strokeDashArray: 5
+      }
+    };
+
+    return (
+      <div className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft">
+        <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-4 flex items-center">
+          <ApperIcon name="BarChart3" className="w-5 h-5 lg:w-6 lg:h-6 mr-2 text-primary" />
+          Monthly Expenses by Category
+        </h3>
+        <Chart options={chartOptions} series={expenseData.series} type="bar" height={300} />
+      </div>
+    );
+  };
+
+  const renderRevenueChart = () => {
+    const revenueData = getRevenueVsExpensesData();
+    
+    const chartOptions = {
+      chart: {
+        type: 'line',
+        height: 300,
+        toolbar: { show: false },
+        background: 'transparent'
+      },
+      stroke: { curve: 'smooth', width: 3 },
+      xaxis: {
+        categories: revenueData.categories,
+        labels: { style: { colors: darkMode ? '#9CA3AF' : '#6B7280' } }
+      },
+      yaxis: {
+        title: { text: 'Amount ($)', style: { color: darkMode ? '#9CA3AF' : '#6B7280' } },
+        labels: { 
+          style: { colors: darkMode ? '#9CA3AF' : '#6B7280' },
+          formatter: (value) => `$${value.toLocaleString()}`
+        }
+      },
+      tooltip: {
+        theme: darkMode ? 'dark' : 'light',
+        y: { formatter: (val) => `$${val.toLocaleString()}` }
+      },
+      legend: {
+        labels: { colors: darkMode ? '#9CA3AF' : '#6B7280' }
+      },
+      colors: ['#22c55e', '#ef4444'],
+      grid: {
+        borderColor: darkMode ? '#374151' : '#e5e7eb',
+        strokeDashArray: 5
+      },
+      markers: { size: 6 }
+    };
+
+    return (
+      <div className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft">
+        <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-4 flex items-center">
+          <ApperIcon name="TrendingUp" className="w-5 h-5 lg:w-6 lg:h-6 mr-2 text-primary" />
+          Revenue vs Expenses Trend
+        </h3>
+        <Chart options={chartOptions} series={revenueData.series} type="line" height={300} />
+      </div>
+    );
+  };
+
+  const renderFarmPerformanceChart = () => {
+    const farmRevenue = {};
+    const farmExpenses = {};
+    
+    sampleRevenue.forEach(revenue => {
+      farmRevenue[revenue.farmId] = (farmRevenue[revenue.farmId] || 0) + revenue.amount;
+    });
+    
+    expenses.forEach(expense => {
+      farmExpenses[expense.farmId] = (farmExpenses[expense.farmId] || 0) + expense.amount;
+    });
+    
+    const farmNames = farms.map(farm => farm.name);
+    const revenueData = farms.map(farm => farmRevenue[farm.id] || 0);
+    const expenseData = farms.map(farm => farmExpenses[farm.id] || 0);
+    
+    const chartOptions = {
+      chart: {
+        type: 'bar',
+        height: 300,
+        toolbar: { show: false },
+        background: 'transparent'
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: '60%',
+          borderRadius: 8
+        }
+      },
+      dataLabels: { enabled: false },
+      xaxis: {
+        categories: farmNames,
+        labels: { style: { colors: darkMode ? '#9CA3AF' : '#6B7280' } }
+      },
+      yaxis: {
+        title: { text: 'Amount ($)', style: { color: darkMode ? '#9CA3AF' : '#6B7280' } },
+        labels: { 
+          style: { colors: darkMode ? '#9CA3AF' : '#6B7280' },
+          formatter: (value) => `$${value.toLocaleString()}`
+        }
+      },
+      tooltip: {
+        theme: darkMode ? 'dark' : 'light',
+        y: { formatter: (val) => `$${val.toLocaleString()}` }
+      },
+      legend: {
+        labels: { colors: darkMode ? '#9CA3AF' : '#6B7280' }
+      },
+      colors: ['#22c55e', '#ef4444'],
+      grid: {
+        borderColor: darkMode ? '#374151' : '#e5e7eb',
+        strokeDashArray: 5
+      }
+    };
+
+    const series = [
+      { name: 'Revenue', data: revenueData },
+      { name: 'Expenses', data: expenseData }
+    ];
+
+    return (
+      <div className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft">
+        <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-4 flex items-center">
+          <ApperIcon name="BarChart2" className="w-5 h-5 lg:w-6 lg:h-6 mr-2 text-primary" />
+          Farm Performance Comparison
+        </h3>
+        <Chart options={chartOptions} series={series} type="bar" height={300} />
+      </div>
+    );
+  };
+
+  const renderCategoryDonutChart = () => {
+    const categoryData = getExpensesByCategory();
+    const categories = Object.keys(categoryData);
+    const amounts = Object.values(categoryData);
+    
+    const chartOptions = {
+      chart: {
+        type: 'donut',
+        height: 300,
+        background: 'transparent'
+      },
+      labels: categories,
+      responsive: [{
+        breakpoint: 480,
+        options: {
+          chart: { width: 200 },
+          legend: { position: 'bottom' }
+        }
+      }],
+      tooltip: {
+        theme: darkMode ? 'dark' : 'light',
+        y: { formatter: (val) => `$${val.toLocaleString()}` }
+      },
+      legend: {
+        labels: { colors: darkMode ? '#9CA3AF' : '#6B7280' },
+        position: 'bottom'
+      },
+      colors: ['#22c55e', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'],
+      plotOptions: {
+        pie: {
+          donut: {
+            size: '70%',
+            labels: {
+              show: true,
+              total: {
+                show: true,
+                label: 'Total',
+                color: darkMode ? '#9CA3AF' : '#6B7280',
+                formatter: () => `$${getTotalExpenses().toLocaleString()}`
+              }
+            }
+          }
+        }
+      }
+    };
+
+    return (
+      <div className="bg-white/80 dark:bg-surface-800/80 backdrop-blur-sm rounded-2xl p-4 lg:p-6 border border-surface-200/50 dark:border-surface-700/50 shadow-soft">
+        <h3 className="text-lg lg:text-xl font-semibold text-surface-900 dark:text-white mb-4 flex items-center">
+          <ApperIcon name="PieChart" className="w-5 h-5 lg:w-6 lg:h-6 mr-2 text-primary" />
+          Expense Breakdown
+        </h3>
+        <Chart options={chartOptions} series={amounts} type="donut" height={300} />
+      </div>
+    );
   };
 
   const renderOverview = () => {
