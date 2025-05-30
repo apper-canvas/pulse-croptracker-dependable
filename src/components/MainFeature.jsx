@@ -592,8 +592,8 @@ case 'crop':
           id,
           dueDate: new Date(formData.dueDate),
 completed: editingItem?.completed || false,
-          status: formData.status || 'Not Started'
-        
+status: formData.status || 'Not Started'
+};
         if (editingItem) {
           setTasks(tasks.map(t => t.id === id ? taskData : t));
           toast.success('Task updated successfully!');
