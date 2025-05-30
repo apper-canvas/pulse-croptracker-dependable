@@ -5,6 +5,151 @@ import ApperIcon from './ApperIcon';
 import { format, addDays, isAfter, isBefore, startOfDay } from 'date-fns';
 import Chart from 'react-apexcharts';
 
+// ImageUpload Component
+const ImageUpload = ({ images = [], onChange, label = "Upload Images" }) => {
+  const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleFileSelect = (files) => {
+    const fileArray = Array.from(files);
+    const validFiles = [];
+    let hasError = false;
+
+    fileArray.forEach(file => {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please select only image files (JPEG, PNG, GIF, WebP)');
+        hasError = true;
+        return;
+      }
+
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('File size must be less than 5MB');
+        hasError = true;
+        return;
+      }
+
+      // Create URL for preview
+      const fileWithPreview = {
+        file,
+        id: Date.now() + Math.random(),
+        url: URL.createObjectURL(file),
+        name: file.name
+      };
+      
+      validFiles.push(fileWithPreview);
+    });
+
+    if (!hasError) {
+      setError('');
+      onChange([...images, ...validFiles]);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const files = e.dataTransfer.files;
+    handleFileSelect(files);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+  };
+
+  const removeImage = (imageId) => {
+    const updatedImages = images.filter(img => img.id !== imageId);
+    // Clean up URL objects
+    const imageToRemove = images.find(img => img.id === imageId);
+    if (imageToRemove && imageToRemove.url) {
+      URL.revokeObjectURL(imageToRemove.url);
+    }
+    onChange(updatedImages);
+  };
+
+  return (
+    <div>
+      <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+        {label}
+      </label>
+      
+      {/* Upload Area */}
+      <div
+        className={`border-2 border-dashed rounded-xl p-6 text-center transition-all duration-300 cursor-pointer ${
+          dragOver 
+            ? 'drag-over' 
+            : 'border-surface-300 dark:border-surface-600 hover:border-primary dark:hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-700/50'
+        }`}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onClick={() => document.getElementById('image-upload').click()}
+      >
+        <ApperIcon name="Upload" className="w-8 h-8 mx-auto mb-2 text-surface-400" />
+        <p className="text-sm text-surface-600 dark:text-surface-400 mb-1">
+          Drag and drop images here, or click to browse
+        </p>
+        <p className="text-xs text-surface-500 dark:text-surface-500">
+          Supports JPEG, PNG, GIF, WebP (max 5MB each)
+        </p>
+        
+        <input
+          id="image-upload"
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => handleFileSelect(e.target.files)}
+        />
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <p className="text-sm text-red-600 dark:text-red-400 mt-2">{error}</p>
+      )}
+
+      {/* Image Previews */}
+      {images.length > 0 && (
+        <div className="mt-4">
+          <p className="text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+            Selected Images ({images.length})
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {images.map((image) => (
+              <div key={image.id} className="relative group">
+                <img
+                  src={image.url}
+                  alt={image.name}
+                  className="w-full h-20 object-cover rounded-lg border border-surface-200 dark:border-surface-600"
+                />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeImage(image.id);
+                  }}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
+                >
+                  <ApperIcon name="X" className="w-3 h-3" />
+                </button>
+                <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 rounded-b-lg truncate">
+                  {image.name}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 const MainFeature = ({ darkMode, searchQuery = '' }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [farms, setFarms] = useState([]);
@@ -282,12 +427,13 @@ const [selectedLocation, setSelectedLocation] = useState('california');
     const timestamp = new Date();
 
     switch (modalType) {
-      case 'farm':
+case 'farm':
         const farmData = {
           ...formData,
           id,
           createdAt: editingItem?.createdAt || timestamp,
-          size: parseFloat(formData.size)
+          size: parseFloat(formData.size),
+          images: formData.images || []
         };
         
         if (editingItem) {
@@ -299,13 +445,14 @@ const [selectedLocation, setSelectedLocation] = useState('california');
         }
         break;
 
-      case 'crop':
+case 'crop':
         const cropData = {
           ...formData,
           id,
           area: parseFloat(formData.area),
           plantingDate: new Date(formData.plantingDate),
-          expectedHarvestDate: new Date(formData.expectedHarvestDate)
+          expectedHarvestDate: new Date(formData.expectedHarvestDate),
+          images: formData.images || []
         };
         
         if (editingItem) {
@@ -1645,6 +1792,11 @@ const ModalForm = ({ type, initialData, onSubmit, onCancel, farms, crops }) => {
           <option value="Silty">Silty</option>
         </select>
       </div>
+<ImageUpload
+        images={formData.images || []}
+        onChange={(images) => handleChange('images', images)}
+        label="Farm Images (Equipment, Activities, etc.)"
+      />
       <div className="flex space-x-3 pt-4">
         <button
           type="submit"
@@ -1757,6 +1909,11 @@ const ModalForm = ({ type, initialData, onSubmit, onCancel, farms, crops }) => {
           <option value="Harvested">Harvested</option>
         </select>
       </div>
+<ImageUpload
+        images={formData.images || []}
+        onChange={(images) => handleChange('images', images)}
+        label="Crop Images (Growth Progress, etc.)"
+      />
       <div className="flex space-x-3 pt-4">
         <button
           type="submit"
